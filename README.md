@@ -1,56 +1,27 @@
 # 🇨🇦 Canada Trade Analysis Dashboard
 
-An interactive Streamlit dashboard for analyzing Canadian international trade data. Explore exports and imports by province, destination, HS commodity codes, and time periods with beautiful visualizations and multiple theme options.
+An interactive Streamlit dashboard for analyzing Canadian international trade data. Explore exports and imports by province, destination, HS commodity codes, and time periods with visualizations to better understand trade patterns both domestically and internationally.
 
 ![Dashboard Preview](https://via.placeholder.com/800x400?text=Dashboard+Screenshot+Coming+Soon)
 
 ## ✨ Features
 
 - **📊 Interactive Visualizations** - Powered by Plotly for smooth, responsive charts
-- **🎨 4 Theme Options** - Classic, High Contrast, Dark Mode, and Colorblind Friendly
-- **📈 Auto-Scaling Units** - Automatically displays values in Trillions, Billions, Millions, or Thousands
 - **🔍 Advanced Filtering** - Filter by trade type, province, destination, HS codes, and date range
 - **⚡ Lightning Fast** - DuckDB queries on Parquet files for sub-second response times
 - **🌐 Full Data Pipeline** - Includes scripts to extract and process data from Statistics Canada
-
-## 🚀 Quick Start
-
-### Option 1: Run Locally (Recommended)
-
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/Canada-Trade-Dashboard.git
-cd Canada-Trade-Dashboard
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the dashboard
-streamlit run dashboard_streamlit/app.py
-```
-
-**Note:** On first run, the dashboard will automatically download the trade data (350 MB) from GitHub Releases. This may take a few minutes depending on your internet connection.
-
-### Option 2: Deploy to Streamlit Cloud
-
-1. Fork this repository
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Deploy from your forked repo
-4. Set main file path: `dashboard_streamlit/app.py`
-
-The data will be automatically downloaded on first deployment.
 
 ## 📊 Data
 
 ### Data Source
 
-All data is sourced from **Statistics Canada's International Merchandise Trade Database**:
+All data for this project is sourced from **Statistics Canada's International Merchandise Trade Database**:
 - API: https://www150.statcan.gc.ca/t1/cimt/
 - License: [Open Government License - Canada](https://open.canada.ca/en/open-government-licence-canada)
 
 ### Data Coverage
 
-- **Time Period:** 2008-2025 (configurable)
+- **Time Period:** 2000-2025 (configurable)
 - **Trade Types:** Exports and Imports
 - **Provinces:** All Canadian provinces and territories
 - **Destinations:** 200+ countries and territories
@@ -70,23 +41,6 @@ python scripts/convert_to_parquet.py
 
 See [scripts/README.md](scripts/README.md) for detailed instructions.
 
-## 🎨 Visualization Themes
-
-The dashboard includes 4 professionally designed themes:
-
-### Classic
-Clean, professional color scheme with high readability
-
-### High Contrast
-Bold, saturated colors for maximum visual distinction
-
-### Dark Mode
-Dark palettes optimized for low-light environments
-
-### Colorblind Friendly
-Scientifically-designed palettes (Viridis, Plasma, Cividis) accessible to colorblind users
-
-See [VISUALIZATION_THEMES_REFERENCE.md](VISUALIZATION_THEMES_REFERENCE.md) for theme details and customization options.
 
 ## 📁 Project Structure
 
@@ -161,8 +115,6 @@ streamlit run dashboard_streamlit/app.py
 ```
 
 ## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Data is sourced from Statistics Canada and subject to the [Open Government License - Canada](https://open.canada.ca/en/open-government-licence-canada).
 
