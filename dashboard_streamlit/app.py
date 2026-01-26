@@ -84,8 +84,18 @@ def query_data(start_date, end_date, trade_type, province, destination, hs_chapt
     return result, query_time
 
 # Initialize database and load common options
-db = init_database()
-common_options = load_common_options()
+try:
+    db = init_database()
+    common_options = load_common_options()
+except Exception as e:
+    st.error(f"❌ Error initializing database: {e}")
+    st.info("""
+    **Possible solutions:**
+    1. The data file may still be downloading. Please wait and refresh the page.
+    2. Check that the GitHub Release exists: https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/tag/v1.0.0
+    3. If the problem persists, check the Streamlit Cloud logs.
+    """)
+    st.stop()
 
 # ============================================================================
 # SIDEBAR FILTERS
