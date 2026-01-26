@@ -118,11 +118,12 @@ class TradeDatabase:
             SELECT * FROM read_parquet('{self.trade_parquet_pattern}')
         """)
         
-        # HS code lookup view
-        self.conn.execute(f"""
-            CREATE OR REPLACE VIEW hs_lookup AS
-            SELECT * FROM read_parquet('{self.hs_lookup_parquet}')
-        """)
+        # HS code lookup view (optional - may not exist in cloud deployment)
+        if self.hs_lookup_parquet.exists():
+            self.conn.execute(f"""
+                CREATE OR REPLACE VIEW hs_lookup AS
+                SELECT * FROM read_parquet('{self.hs_lookup_parquet}')
+            """)
     
     def get_common_options(self) -> Dict[str, Any]:
         """
