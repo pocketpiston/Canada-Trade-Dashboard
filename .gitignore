@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.log
+
+# Data files (too large for GitHub)
+data/processed/*.parquet
+data/raw/
+data/raw_imports/
+dashboard/src/data/history/
+dashboard/public/data/history/
+dashboard/public/data/trade_data_*.json
+dashboard/public/data/trade_data.json
+dashboard/src/data/trade_data.json
+src/data/trade_data_processed.json
+src/data/trade_data_processed_*.json
+src/data/trade_data_imports_*.json
+src/data/trade_data_from_raw.json
+dashboard/dist/data/
+dashboard/public/data/
+*.csv
+*.xlsx
+*.ipynb_checkpoints/

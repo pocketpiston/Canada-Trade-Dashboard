@@ -1,0 +1,352 @@
+[
+  {
+    "id": "CCI",
+    "en": "Radioactivity in curies",
+    "fr": "Radioactivit\u00e9 en curies"
+  },
+  {
+    "id": "CCI",
+    "en": "Radioactivity in curies",
+    "fr": "Radioactivit\u00e9 en curies"
+  },
+  {
+    "id": "CEN",
+    "en": "Hundred",
+    "fr": "Cent"
+  },
+  {
+    "id": "CLT",
+    "en": "Volume in centilitres",
+    "fr": "Volume en centilitres"
+  },
+  {
+    "id": "CMK",
+    "en": "Area in square centimetres",
+    "fr": "Superficie en centim\u00e8tres carr\u00e9s"
+  },
+  {
+    "id": "CMQ",
+    "en": "Cubic centimetre",
+    "fr": "Centim\u00e8tre cube"
+  },
+  {
+    "id": "CMT",
+    "en": "Length in centimetres",
+    "fr": "Longueur en centim\u00e8tres"
+  },
+  {
+    "id": "CTM",
+    "en": "Weight in carats",
+    "fr": "Poids en carats"
+  },
+  {
+    "id": "DLT",
+    "en": "Volume in decilitres",
+    "fr": "Volume en d\u00e9cilitres"
+  },
+  {
+    "id": "DMK",
+    "en": "Area in square decimetres",
+    "fr": "Superficie en d\u00e9cim\u00e8tres carr\u00e9s"
+  },
+  {
+    "id": "DMQ",
+    "en": "Cubic decimetre",
+    "fr": "D\u00e9cim\u00e8tre cube"
+  },
+  {
+    "id": "DMT",
+    "en": "Length in decimetres",
+    "fr": "Longueur en d\u00e9cim\u00e8tres"
+  },
+  {
+    "id": "DPR",
+    "en": "Number of pairs in dozens",
+    "fr": "Nombre de douzaines de paires"
+  },
+  {
+    "id": "DTN",
+    "en": "Weight in decitons",
+    "fr": "Poids en d\u00e9citonnes"
+  },
+  {
+    "id": "DZN",
+    "en": "Number of dozens",
+    "fr": "Nombre de douzaines"
+  },
+  {
+    "id": "GBQ",
+    "en": "Radioactivity in gigabecquerels",
+    "fr": "Radioactivit\u00e9 en gigabecquerels"
+  },
+  {
+    "id": "GGR",
+    "en": "Great gross",
+    "fr": "Grande grosse"
+  },
+  {
+    "id": "GRM",
+    "en": "Weight in grams",
+    "fr": "Poids en grammes"
+  },
+  {
+    "id": "GRO",
+    "en": "Number of gross",
+    "fr": "Nombre en grosses"
+  },
+  {
+    "id": "GWH",
+    "en": "Gigawatt-Hour",
+    "fr": "Gigawattheure"
+  },
+  {
+    "id": "HGM",
+    "en": "Weight in hectograms",
+    "fr": "Poids en hectogrammes"
+  },
+  {
+    "id": "HLT",
+    "en": "Volume in hectolitres",
+    "fr": "Volume en hectolitres"
+  },
+  {
+    "id": "HMQ",
+    "en": "Millions of cubic metres",
+    "fr": "Millions de m\u00e8tres cubes"
+  },
+  {
+    "id": "HMT",
+    "en": "Area in hectometres",
+    "fr": "Superficie en hectom\u00e8tres"
+  },
+  {
+    "id": "HPA",
+    "en": "Volume in hectolitres of pure alcohol",
+    "fr": "Volume en hectolitres d'alcool pur"
+  },
+  {
+    "id": "JOU",
+    "en": "Joule",
+    "fr": "Joule"
+  },
+  {
+    "id": "KGM",
+    "en": "Weight in kilograms",
+    "fr": "Poids en kilogrammes"
+  },
+  {
+    "id": "KJO",
+    "en": "Kilojoule",
+    "fr": "Kilojoule"
+  },
+  {
+    "id": "KMK",
+    "en": "Square kilometre",
+    "fr": "Kilom\u00e8tre carr\u00e9"
+  },
+  {
+    "id": "KMT",
+    "en": "Kilometre",
+    "fr": "Kilom\u00e8tre"
+  },
+  {
+    "id": "KNS",
+    "en": "Weight in kilograms of named substance",
+    "fr": "Poids en kilogrammes de la mati\u00e8re mentionn\u00e9e"
+  },
+  {
+    "id": "KSD",
+    "en": "Weight in air dry kilograms",
+    "fr": "Poids en kilogrammes s\u00e9ch\u00e9s \u00e0 l'air"
+  },
+  {
+    "id": "KTN",
+    "en": "Weight in kilotons",
+    "fr": "Poids en kilotonnes"
+  },
+  {
+    "id": "KVA",
+    "en": "Kilovolt-Ampere",
+    "fr": "Kilovolt-amp\u00e8re"
+  },
+  {
+    "id": "KWH",
+    "en": "Kilowatt-Hour",
+    "fr": "Kilowattheure"
+  },
+  {
+    "id": "KWT",
+    "en": "Kilowatt",
+    "fr": "Kilowatt"
+  },
+  {
+    "id": "LPA",
+    "en": "Volume in litres of pure alcohol",
+    "fr": "Volume en litres d'alcool pur"
+  },
+  {
+    "id": "LTR",
+    "en": "Volume in litres",
+    "fr": "Volume en litres"
+  },
+  {
+    "id": "MAL",
+    "en": "Volume in megalitres",
+    "fr": "Volume en m\u00e9galitres"
+  },
+  {
+    "id": "MAM",
+    "en": "Megametre",
+    "fr": "M\u00e9gam\u00e8tre"
+  },
+  {
+    "id": "MAW",
+    "en": "Megawatt",
+    "fr": "M\u00e9gawatt"
+  },
+  {
+    "id": "MBQ",
+    "en": "Radioactivity in megabecquerels",
+    "fr": "Radioactivit\u00e9 en m\u00e9gabecquerels"
+  },
+  {
+    "id": "MCI",
+    "en": "Radioactivity in millicuries",
+    "fr": "Radioactivit\u00e9 en millicuries"
+  },
+  {
+    "id": "MCI",
+    "en": "Radioactivity in millicuries",
+    "fr": "Radioactivit\u00e9 en millicuries"
+  },
+  {
+    "id": "MGM",
+    "en": "Weight in milligrams",
+    "fr": "Poids en milligrammes"
+  },
+  {
+    "id": "MIL",
+    "en": "Number in thousands",
+    "fr": "Nombre en milliers"
+  },
+  {
+    "id": "MIO",
+    "en": "Million",
+    "fr": "Million"
+  },
+  {
+    "id": "MLT",
+    "en": "Volume in millilitres",
+    "fr": "Volume en millilitres"
+  },
+  {
+    "id": "MMK",
+    "en": "Area in square millimetres",
+    "fr": "Superficie en millim\u00e8tres carr\u00e9s"
+  },
+  {
+    "id": "MMQ",
+    "en": "Cubic millimetre",
+    "fr": "Millim\u00e8tre cube"
+  },
+  {
+    "id": "MMT",
+    "en": "Length in millimetres",
+    "fr": "Longueur en millim\u00e8tres"
+  },
+  {
+    "id": "MSF",
+    "en": "Thousands of square feet",
+    "fr": "Milliers de pieds carr\u00e9s"
+  },
+  {
+    "id": "MTK",
+    "en": "Area in square metres",
+    "fr": "Superficie en m\u00e8tres carr\u00e9s"
+  },
+  {
+    "id": "MTQ",
+    "en": "Volume in cubic metres",
+    "fr": "Volume en m\u00e8tres cubes"
+  },
+  {
+    "id": "MTR",
+    "en": "Length in metres",
+    "fr": "Longueurs en m\u00e8tres"
+  },
+  {
+    "id": "MVA",
+    "en": "Megavolt-Ampere",
+    "fr": "M\u00e9gavolt-amp\u00e8re"
+  },
+  {
+    "id": "MWH",
+    "en": "Megawatt-Hour",
+    "fr": "M\u00e9gawattheure"
+  },
+  {
+    "id": "N/A",
+    "en": "Blank",
+    "fr": "Blanc"
+  },
+  {
+    "id": "NAP",
+    "en": "Number of packages",
+    "fr": "Nombre de paquets"
+  },
+  {
+    "id": "NMB",
+    "en": "Number",
+    "fr": "Nombre"
+  },
+  {
+    "id": "NPL",
+    "en": "Number of parcels",
+    "fr": "Nombre de paquets"
+  },
+  {
+    "id": "PAR",
+    "en": "Number of pairs",
+    "fr": "Nombre de paires"
+  },
+  {
+    "id": "PCE",
+    "en": "Piece",
+    "fr": "Pi\u00e8ce"
+  },
+  {
+    "id": "SCO",
+    "en": "Score (approximately twenty)",
+    "fr": "Une vingtaine"
+  },
+  {
+    "id": "SET",
+    "en": "Number of sets",
+    "fr": "Nombre d'ensembles"
+  },
+  {
+    "id": "TMQ",
+    "en": "Thousands of cubic metres",
+    "fr": "Milliers de m\u00e8tres cubes"
+  },
+  {
+    "id": "TNE",
+    "en": "Weight in metric tonne",
+    "fr": "Poids en tonne m\u00e9trique"
+  },
+  {
+    "id": "TSD",
+    "en": "Metric tonne air dry",
+    "fr": "Tonne m\u00e9trique s\u00e9ch\u00e9e \u00e0 l'air"
+  },
+  {
+    "id": "WHR",
+    "en": "Watt-Hour",
+    "fr": "Wattheure"
+  },
+  {
+    "id": "WTT",
+    "en": "Watt",
+    "fr": "Watt"
+  }
+]

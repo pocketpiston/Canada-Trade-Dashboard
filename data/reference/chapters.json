@@ -1,0 +1,492 @@
+[
+  {
+    "HS": "01",
+    "EN": "Live animals",
+    "FR": "Animaux vivants"
+  },
+  {
+    "HS": "02",
+    "EN": "Meat and edible meat offal",
+    "FR": "Viandes et abats comestibles"
+  },
+  {
+    "HS": "03",
+    "EN": "Fish and crustaceans, molluscs and other aquatic invertebrates",
+    "FR": "Poissons et crustac\u00e9s, mollusques et autres invert\u00e9br\u00e9s aquatiques"
+  },
+  {
+    "HS": "04",
+    "EN": "Dairy produce; birds' eggs; natural honey; edible products of animal origin, not elsewhere specified or included",
+    "FR": "Lait et produits de la laiterie; oeufs d\u2019oiseaux; miel naturel; produits comestibles d\u2019origine animale, non d\u00e9nomm\u00e9s ni compris ailleurs"
+  },
+  {
+    "HS": "05",
+    "EN": "Products of animal origin, not elsewhere specified or included",
+    "FR": "Autres produits d\u2019origine animale, non d\u00e9nomm\u00e9s ni compris ailleurs"
+  },
+  {
+    "HS": "06",
+    "EN": "Live trees and other plants; bulbs, roots and the like; cut flowers and ornamental foliage",
+    "FR": "Plantes vivantes et produits de la floriculture"
+  },
+  {
+    "HS": "07",
+    "EN": "Edible vegetables and certain roots and tubers",
+    "FR": "L\u00e9gumes, plantes, racines et tubercules alimentaires"
+  },
+  {
+    "HS": "08",
+    "EN": "Edible fruit and nuts; peel of citrus fruit or melons",
+    "FR": "Fruits comestibles; \u00e9corces d\u2019agrumes ou de melons"
+  },
+  {
+    "HS": "09",
+    "EN": "Coffee, tea, mat\u00e9 and spices",
+    "FR": "Caf\u00e9, th\u00e9, mat\u00e9 et \u00e9pices"
+  },
+  {
+    "HS": "10",
+    "EN": "Cereals",
+    "FR": "C\u00e9r\u00e9ales"
+  },
+  {
+    "HS": "11",
+    "EN": "Products of the milling industry; malt; starches; inulin; wheat gluten",
+    "FR": "Produits de la minoterie; malt; amidons et f\u00e9cules; inuline; gluten de froment"
+  },
+  {
+    "HS": "12",
+    "EN": "Oil seeds and oleaginous fruits; miscellaneous grains, seeds and fruit; industrial or medicinal plants; straw and fodder",
+    "FR": "Graines et fruits ol\u00e9agineux; graines, semences et fruits divers; plantes industrielles ou m\u00e9dicinales; pailles et fourrages"
+  },
+  {
+    "HS": "13",
+    "EN": "Lac; gums, resins and other vegetable saps and extracts",
+    "FR": "Gommes, r\u00e9sines et autres sucs et extraits v\u00e9g\u00e9taux"
+  },
+  {
+    "HS": "14",
+    "EN": "Vegetable plaiting materials; vegetable products not elsewhere specified or included",
+    "FR": "Mati\u00e8res \u00e0 tresser et autres produits d\u2019origine v\u00e9g\u00e9tale, non d\u00e9nomm\u00e9s ni compris ailleurs"
+  },
+  {
+    "HS": "15",
+    "EN": "Animal or vegetable fats and oils and their cleavage products; prepared edible fats; animal or vegetable waxes",
+    "FR": "Graisses et huiles animales ou v\u00e9g\u00e9tales; produits de leur dissociation; graisses alimentaires \u00e9labor\u00e9es; cires d\u2019origine animale ou v\u00e9g\u00e9tale"
+  },
+  {
+    "HS": "16",
+    "EN": "Preparations of meat, of fish or of crustaceans, molluscs or other aquatic invertebrates",
+    "FR": "Pr\u00e9parations de viande, de poissons ou de crustac\u00e9s, de mollusques ou d\u2019autres invert\u00e9br\u00e9s aquatiques"
+  },
+  {
+    "HS": "17",
+    "EN": "Sugars and sugar confectionery",
+    "FR": "Sucres et sucreries"
+  },
+  {
+    "HS": "18",
+    "EN": "Cocoa and cocoa preparations",
+    "FR": "Cacao et ses pr\u00e9parations"
+  },
+  {
+    "HS": "19",
+    "EN": "Preparations of cereals, flour, starch or milk; pastrycooks' products",
+    "FR": "Pr\u00e9parations \u00e0 base de c\u00e9r\u00e9ales, de farines, d\u2019amidons, de f\u00e9cules ou de lait; p\u00e2tisseries"
+  },
+  {
+    "HS": "20",
+    "EN": "Preparation of vegetables, fruit, nuts or other parts of plants",
+    "FR": "Pr\u00e9parations de l\u00e9gumes, de fruits ou d\u2019autres parties de plantes"
+  },
+  {
+    "HS": "21",
+    "EN": "Miscellaneous edible preparations",
+    "FR": "Pr\u00e9parations alimentaires diverses"
+  },
+  {
+    "HS": "22",
+    "EN": "Beverages, spirits and vinegar",
+    "FR": "Boissons, liquides alcooliques et vinaigres"
+  },
+  {
+    "HS": "23",
+    "EN": "Residues and waste from the food industries; prepared animal fodder",
+    "FR": "R\u00e9sidus et d\u00e9chets des industries alimentaires; aliments pr\u00e9par\u00e9s pour animaux"
+  },
+  {
+    "HS": "24",
+    "EN": "Tobacco and manufactured tobacco substitutes",
+    "FR": "Tabacs et succ\u00e9dan\u00e9s de tabac fabriqu\u00e9s"
+  },
+  {
+    "HS": "25",
+    "EN": "Salt; sulphur; earths and stone; plastering materials, lime and cement",
+    "FR": "Sel; soufre; terres et pierres; pl\u00e2tres, chaux et ciments"
+  },
+  {
+    "HS": "26",
+    "EN": "Ores, slag and ash",
+    "FR": "Minerais, scories et cendres"
+  },
+  {
+    "HS": "27",
+    "EN": "Mineral fuels, mineral oils and products of their distillation; bituminous substances; mineral waxes",
+    "FR": "Combustibles min\u00e9raux, huiles min\u00e9rales et produits de leur distillation; mati\u00e8res bitumineuses; cires min\u00e9rales"
+  },
+  {
+    "HS": "28",
+    "EN": "Inorganic chemicals; organic or inorganic compounds of precious metals, of rare-earth metals, of radioactive elements or of isotopes",
+    "FR": "Produits chimiques inorganiques; compos\u00e9s inorganiques ou organiques de m\u00e9taux pr\u00e9cieux, d\u2019\u00e9l\u00e9ments radioactifs, de m\u00e9taux des terres rares ou d\u2019isotopes"
+  },
+  {
+    "HS": "29",
+    "EN": "Organic chemicals",
+    "FR": "Produits chimiques organiques"
+  },
+  {
+    "HS": "30",
+    "EN": "Pharmaceutical products",
+    "FR": "Produits pharmaceutiques"
+  },
+  {
+    "HS": "31",
+    "EN": "Fertilizers",
+    "FR": "Engrais"
+  },
+  {
+    "HS": "32",
+    "EN": "Tanning or dyeing extracts; tannins and their derivatives; dyes, pigments and other colouring matter; paints and varnishes; putty and other mastics; inks",
+    "FR": "Extraits tannants ou tinctoriaux; tanins et leurs d\u00e9riv\u00e9s; pigments et autres mati\u00e8res colorantes; peintures et vernis; mastics; encres"
+  },
+  {
+    "HS": "33",
+    "EN": "Essential oils and resinoids; perfumery, cosmetic or toilet preparations",
+    "FR": "Huiles essentielles et r\u00e9sino\u00efdes; produits de parfumerie ou de toilette pr\u00e9par\u00e9s et pr\u00e9parations cosm\u00e9tiques"
+  },
+  {
+    "HS": "34",
+    "EN": "Soap, organic surface-active agents, washing preparations, lubricating preparations, artificial waxes, prepared waxes, polishing or scouring preparations, candles and similar articles, modelling pastes, \"dental waxes\" and dental preparations with a basis of plaster",
+    "FR": "Savons, agents de surface organiques, pr\u00e9parations pour lessives, pr\u00e9parations lubrifiantes, cires artificielles, cires pr\u00e9par\u00e9es, produits d\u2019entretien, bougies et articles similaires, p\u00e2tes \u00e0 modeler, \u00ab cires pour l\u2019art dentaire \u00bb et compositions pour l\u2019art dentaire \u00e0 base de pl\u00e2tre"
+  },
+  {
+    "HS": "35",
+    "EN": "Albuminoidal substances; modified starches; glues; enzymes",
+    "FR": "Mati\u00e8res albumino\u00efdes; produits \u00e0 base d\u2019amidons ou de f\u00e9cules modifi\u00e9s; colles; enzymes"
+  },
+  {
+    "HS": "36",
+    "EN": "Explosives; pyrotechnic products; matches; pyrophoric alloys; certain combustible preparations",
+    "FR": "Poudres et explosifs; articles de pyrotechnie; allumettes; alliages pyrophoriques; mati\u00e8res inflammables"
+  },
+  {
+    "HS": "37",
+    "EN": "Photographic or cinematographic goods",
+    "FR": "Produits photographiques ou cin\u00e9matographiques"
+  },
+  {
+    "HS": "38",
+    "EN": "Miscellaneous chemical products",
+    "FR": "Produits divers des industries chimiques"
+  },
+  {
+    "HS": "39",
+    "EN": "Plastics and articles thereof",
+    "FR": "Mati\u00e8res plastiques et ouvrages en ces mati\u00e8res"
+  },
+  {
+    "HS": "40",
+    "EN": "Rubber and articles thereof",
+    "FR": "Caoutchouc et ouvrages en caoutchouc"
+  },
+  {
+    "HS": "41",
+    "EN": "Raw hides and skins (other than furskins) and leather",
+    "FR": "Peaux (autres que les pelleteries) et cuirs"
+  },
+  {
+    "HS": "42",
+    "EN": "Articles of leather; saddlery and harness; travel goods, handbags and similar containers; articles of animal gut (other than silk-worm gut)",
+    "FR": "Ouvrages en cuir; articles de bourrellerie ou de sellerie; articles de voyage, sacs \u00e0 main et contenants similaires; ouvrages en boyaux"
+  },
+  {
+    "HS": "43",
+    "EN": "Furskins and artificial fur; manufactures thereof",
+    "FR": "Pelleteries et fourrures; pelleteries factices"
+  },
+  {
+    "HS": "44",
+    "EN": "Wood and articles of wood; wood charcoal",
+    "FR": "Bois, charbon de bois et ouvrages en bois"
+  },
+  {
+    "HS": "45",
+    "EN": "Cork and articles of cork",
+    "FR": "Li\u00e8ge et ouvrages en li\u00e8ge"
+  },
+  {
+    "HS": "46",
+    "EN": "Manufactures of straw, of esparto or of other plaiting materials; basketware and wickerwork",
+    "FR": "Ouvrages de sparterie ou de vannerie"
+  },
+  {
+    "HS": "47",
+    "EN": "Pulp of wood or of other fibrous cellulosic material; recovered (waste and scrap) paper or paperboard",
+    "FR": "P\u00e2tes de bois ou d\u2019autres mati\u00e8res fibreuses cellulosiques; papier ou carton \u00e0 recycler (d\u00e9chets et rebuts)"
+  },
+  {
+    "HS": "48",
+    "EN": "Paper and paperboard; articles of paper pulp, of paper or of paperboard",
+    "FR": "Papiers et cartons; ouvrages en p\u00e2te de cellulose, en papier ou en carton"
+  },
+  {
+    "HS": "49",
+    "EN": "Printed books, newspapers, pictures and other products of the printing industry; manuscripts, typescripts and plans",
+    "FR": "Produits de l\u2019\u00e9dition, de la presse ou des autres industries graphiques; textes manuscrits ou dactylographi\u00e9s et plans"
+  },
+  {
+    "HS": "50",
+    "EN": "Silk",
+    "FR": "Soie"
+  },
+  {
+    "HS": "51",
+    "EN": "Wool, fine or coarse animal hair; horsehair yarn and woven fabric",
+    "FR": "Laine, poils fins ou grossiers; fils et tissus de crin"
+  },
+  {
+    "HS": "52",
+    "EN": "Coton",
+    "FR": "Coton"
+  },
+  {
+    "HS": "53",
+    "EN": "Other vegetable textile fibres; paper yarn and woven fabrics of paper yarn",
+    "FR": "Autres fibres textiles v\u00e9g\u00e9tales; fils de papier et tissus de fils de papier"
+  },
+  {
+    "HS": "54",
+    "EN": "Man-made filaments; strip and the like of man-made textile materials",
+    "FR": "Filaments synth\u00e9tiques ou artificiels; lames et formes similaires en mati\u00e8res textiles synth\u00e9tiques ou artificielles"
+  },
+  {
+    "HS": "55",
+    "EN": "Man-made staple fibres",
+    "FR": "Fibres synth\u00e9tiques ou artificielles discontinues"
+  },
+  {
+    "HS": "56",
+    "EN": "Wadding, felt and nonwovens; special yarns; twine, cordage, ropes and cables and articles thereof",
+    "FR": "Ouates, feutres et nontiss\u00e9s; fils sp\u00e9ciaux; ficelles, cordes et cordages; articles de corderie"
+  },
+  {
+    "HS": "57",
+    "EN": "Carpets and other textile floor coverings",
+    "FR": "Tapis et autres rev\u00eatements de sol en mati\u00e8res textiles"
+  },
+  {
+    "HS": "58",
+    "EN": "Special woven fabrics; tufted textile fabrics; lace; tapestries; trimmings; embroidery",
+    "FR": "Tissus sp\u00e9ciaux; surfaces textiles touffet\u00e9es; dentelles; tapisseries; passementeries; broderies"
+  },
+  {
+    "HS": "59",
+    "EN": "Impregnated, coated, covered or laminated textile fabrics; textile articles of a kind suitable for industrial use",
+    "FR": "Tissus impr\u00e9gn\u00e9s, enduits, recouverts ou stratifi\u00e9s; articles techniques en mati\u00e8res textiles"
+  },
+  {
+    "HS": "60",
+    "EN": "Knitted or crocheted fabrics",
+    "FR": "\u00c9toffes de bonneterie"
+  },
+  {
+    "HS": "61",
+    "EN": "Articles of apparel and clothing accessories, knitted or crocheted",
+    "FR": "V\u00eatements et accessoires du v\u00eatement, en bonneterie"
+  },
+  {
+    "HS": "62",
+    "EN": "Articles of apparel and clothing accessories, not knitted or crocheted",
+    "FR": "V\u00eatements et accessoires du v\u00eatement, autres qu\u2019en bonneterie"
+  },
+  {
+    "HS": "63",
+    "EN": "Other made up textile articles; sets; worn clothing and worn textile articles; rags",
+    "FR": "Autres articles textiles confectionn\u00e9s; assortiments; friperie et chiffons"
+  },
+  {
+    "HS": "64",
+    "EN": "Footwear, gaiters and the like; parts of such articles",
+    "FR": "Chaussures, gu\u00eatres et articles analogues; parties de ces objets"
+  },
+  {
+    "HS": "65",
+    "EN": "Headgear and parts thereof",
+    "FR": "Coiffures et parties de coiffures"
+  },
+  {
+    "HS": "66",
+    "EN": "Umbrellas, sun umbrellas, walking-sticks, seat-sticks, whips, riding-crops and parts thereof",
+    "FR": "Parapluies, ombrelles, parasols, cannes, cannes-si\u00e8ges, fouets, cravaches et leurs parties"
+  },
+  {
+    "HS": "67",
+    "EN": "Prepared feathers and down and articles made of feathers or of down; artificial flowers; articles of human hair",
+    "FR": "Plumes et duvet appr\u00eat\u00e9s et articles en plumes ou en duvet; fleurs artificielles; ouvrages en cheveux"
+  },
+  {
+    "HS": "68",
+    "EN": "Articles of stone, plaster, cement, asbestos, mica or similar materials",
+    "FR": "Ouvrages en pierres, pl\u00e2tre, ciment, amiante, mica ou mati\u00e8res analogues"
+  },
+  {
+    "HS": "69",
+    "EN": "Ceramic products",
+    "FR": "Produits c\u00e9ramiques"
+  },
+  {
+    "HS": "70",
+    "EN": "Glass and glassware",
+    "FR": "Verre et ouvrages en verre"
+  },
+  {
+    "HS": "71",
+    "EN": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal and articles thereof; imitation jewellery; coin",
+    "FR": "Perles fines ou de culture, pierres gemmes ou similaires, m\u00e9taux pr\u00e9cieux, plaqu\u00e9s ou doubl\u00e9s de m\u00e9taux pr\u00e9cieux et ouvrages en ces mati\u00e8res; bijouterie de fantaisie; monnaies"
+  },
+  {
+    "HS": "72",
+    "EN": "Iron and steel",
+    "FR": "Fonte, fer et acier"
+  },
+  {
+    "HS": "73",
+    "EN": "Articles of iron or steel",
+    "FR": "Ouvrages en fonte, fer ou acier"
+  },
+  {
+    "HS": "74",
+    "EN": "Copper and articles thereof",
+    "FR": "Cuivre et ouvrages en cuivre"
+  },
+  {
+    "HS": "75",
+    "EN": "Nickel and articles thereof",
+    "FR": "Nickel et ouvrages en nickel"
+  },
+  {
+    "HS": "76",
+    "EN": "Aluminum and articles thereof",
+    "FR": "Aluminium et ouvrages en aluminium"
+  },
+  {
+    "HS": "78",
+    "EN": "Lead and articles thereof",
+    "FR": "Plomb et ouvrages en plomb"
+  },
+  {
+    "HS": "79",
+    "EN": "Zinc and articles thereof",
+    "FR": "Zinc et ouvrages en zinc"
+  },
+  {
+    "HS": "80",
+    "EN": "Tin and articles thereof",
+    "FR": "\u00c9tain et ouvrages en \u00e9tain"
+  },
+  {
+    "HS": "81",
+    "EN": "Other base metals; cerments; articles thereof",
+    "FR": "Autres m\u00e9taux communs; cermets; ouvrages en ces mati\u00e8res"
+  },
+  {
+    "HS": "82",
+    "EN": "Tools, implements, cutlery, spoons and forks, of base metal; parts thereof of base metal",
+    "FR": "Outils et outillage, articles de coutellerie et couverts de table, en m\u00e9taux communs; parties de ces articles, en m\u00e9taux communs"
+  },
+  {
+    "HS": "83",
+    "EN": "Miscellaneous articles of base metal",
+    "FR": "Ouvrages divers en m\u00e9taux communs"
+  },
+  {
+    "HS": "84",
+    "EN": "Nuclear reactors, boilers, machinery and mechanical appliances; parts thereof",
+    "FR": "R\u00e9acteurs nucl\u00e9aires, chaudi\u00e8res, machines, appareils et engins m\u00e9caniques; parties de ces machines ou appareils"
+  },
+  {
+    "HS": "85",
+    "EN": "Electrical machinery and equipment and parts thereof; sound recorders and reproducers, television image and sound recorders and reproducers, and parts and accessories of such articles",
+    "FR": "Machines, appareils et mat\u00e9riels \u00e9lectriques et leurs parties; appareils d\u2019enregistrement ou de reproduction du son, appareils d\u2018enregistrement ou de reproduction des images et du son en t\u00e9l\u00e9vision, et parties et accessoires de ces appareils"
+  },
+  {
+    "HS": "86",
+    "EN": "Railway or tramway locomotives, rolling-stock and parts thereof; railway or tramway track fixtures and fittings and parts thereof; mechanical (including electro-mechanical) traffic signalling equipment of all kinds",
+    "FR": "V\u00e9hicules et mat\u00e9riel pour voies ferr\u00e9es ou similaires et leurs parties; appareils m\u00e9caniques (y compris \u00e9lectrom\u00e9caniques) de signalisation pour voies de communications"
+  },
+  {
+    "HS": "87",
+    "EN": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+    "FR": "Voitures automobiles, tracteurs, cycles et autres v\u00e9hicules terrestres, leurs parties et accessoires"
+  },
+  {
+    "HS": "88",
+    "EN": "Aircraft, spacecraft, and parts thereof",
+    "FR": "Navigation a\u00e9rienne ou spatiale"
+  },
+  {
+    "HS": "89",
+    "EN": "Ships, boats and floating structures",
+    "FR": "Navigation maritime ou fluviale"
+  },
+  {
+    "HS": "90",
+    "EN": "Optical, photographic, cinematographic, measuring, checking, precision, medical or surgical instruments and apparatus; parts and accessories thereof",
+    "FR": "Instruments et appareils d\u2019optique, de photographie ou de cin\u00e9matographie, de mesure, de contr\u00f4le ou de pr\u00e9cision; instruments et appareils m\u00e9dico-chirurgicaux; parties et accessoires de ces instruments ou appareils"
+  },
+  {
+    "HS": "91",
+    "EN": "Clocks and watches and parts thereof",
+    "FR": "Horlogerie"
+  },
+  {
+    "HS": "92",
+    "EN": "Musical instruments; parts and accessories of such articles",
+    "FR": "Instruments de musique; parties et accessoires de ces instruments"
+  },
+  {
+    "HS": "93",
+    "EN": "Arms and ammunition; parts and accessories thereof",
+    "FR": "Armes, munitions et leurs parties et accessoires"
+  },
+  {
+    "HS": "94",
+    "EN": "Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings",
+    "FR": "Meubles; mobilier m\u00e9dico-chirurgical; articles de literie et similaires; appareils d\u2019\u00e9clairage non d\u00e9nomm\u00e9s ni compris ailleurs; lampes-r\u00e9clames, enseignes lumineuses, plaques indicatrices lumineuses et articles similiares; constructions pr\u00e9fabriqu\u00e9es"
+  },
+  {
+    "HS": "95",
+    "EN": "Toys, games and sports requisites; parts and accessories thereof",
+    "FR": "Jouets, jeux, articles pour divertissements ou pour sports; leurs parties et accessoires"
+  },
+  {
+    "HS": "96",
+    "EN": "Miscellaneous manufactured articles",
+    "FR": "Ouvrages divers"
+  },
+  {
+    "HS": "97",
+    "EN": "Works of art, collectors' pieces and antiques",
+    "FR": "Objets d\u2019art, de collection ou d\u2019antiquit\u00e9"
+  },
+  {
+    "HS": "98",
+    "EN": "Special classification provisions",
+    "FR": "Dispositions de classification sp\u00e9ciale"
+  },
+  {
+    "HS": "99",
+    "EN": "Miscellaneous manufactured articles",
+    "FR": "Dispositions de classification sp\u00e9ciale"
+  }
+]

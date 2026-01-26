@@ -1,0 +1,67 @@
+[
+  {
+    "id": 10,
+    "en": "Newfoundland and Labrador",
+    "fr": "Terre\u2013Neuve\u2013et\u2013Labrador"
+  },
+  {
+    "id": 11,
+    "en": "Prince Edward Island",
+    "fr": "\u00cele\u2013du\u2013Prince\u2013\u00c9douard"
+  },
+  {
+    "id": 12,
+    "en": "Nova Scotia",
+    "fr": "Nouvelle\u2013\u00c9cosse"
+  },
+  {
+    "id": 13,
+    "en": "New Brunswick",
+    "fr": "Nouveau\u2013Brunswick"
+  },
+  {
+    "id": 24,
+    "en": "Quebec",
+    "fr": "Qu\u00e9bec"
+  },
+  {
+    "id": 35,
+    "en": "Ontario",
+    "fr": "Ontario"
+  },
+  {
+    "id": 46,
+    "en": "Manitoba",
+    "fr": "Manitoba"
+  },
+  {
+    "id": 47,
+    "en": "Saskatchewan",
+    "fr": "Saskatchewan"
+  },
+  {
+    "id": 48,
+    "en": "Alberta",
+    "fr": "Alberta"
+  },
+  {
+    "id": 59,
+    "en": "British Columbia",
+    "fr": "Colombie\u2013Britannique"
+  },
+  {
+    "id": 60,
+    "en": "Yukon",
+    "fr": "Yukon"
+  },
+  {
+    "id": 61,
+    "en": "Northwest Territories",
+    "fr": "Territoires du Nord-Ouest"
+  },
+  {
+    "id": 62,
+    "en": "Nunavut",
+    "fr": "Nunavut"
+  }
+]
