@@ -21,7 +21,7 @@ class TradeDatabase:
     """
     
     # GitHub Release URL for data download
-    DATA_RELEASE_URL = "https://github.com/YOUR_USERNAME/Canada-Trade-Dashboard/releases/download/v1.0.0/trade_records.parquet"
+    DATA_RELEASE_URL = "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/download/v1.0.0/trade_records.parquet"
     
     def __init__(self, data_dir: str = None):
         """
