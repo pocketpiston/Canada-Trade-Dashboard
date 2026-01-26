@@ -51,9 +51,6 @@ class TradeDatabase:
         # Create in-memory DuckDB connection
         self.conn = duckdb.connect(':memory:')
         
-        # Set query timeout to prevent hanging (30 seconds)
-        self.conn.execute("SET max_query_timeout = 30000")
-        
         # Initialize views
         self._initialize_views()
     
