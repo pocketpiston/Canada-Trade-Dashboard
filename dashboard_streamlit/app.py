@@ -967,7 +967,7 @@ st.markdown("---")
 st.caption("""
 **Data Source:** Statistics Canada Table 12-10-0011-01 | 
 **Dashboard:** Built with Streamlit + DuckDB | 
-**Last Updated:** Check data/processed/metadata.json
+**Last Updated:** 31 Jan 2026
 """)
 
 # Sidebar info
