@@ -7,6 +7,8 @@ using DuckDB for fast, analytical queries.
 
 import duckdb
 import pandas as pd
+import requests
+import os
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -39,8 +41,39 @@ class TradeDatabase:
         # Create in-memory DuckDB connection
         self.conn = duckdb.connect(':memory:')
         
+        # Provision data if missing
+        self._provision_data()
+        
         # Initialize views
         self._initialize_views()
+    
+    def _provision_data(self):
+        """
+        Check if data exists locally, and if not, attempt to download from GitHub Releases.
+        """
+        # Ensure directory exists
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Target files
+        files_to_check = [
+            ("trade_records.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/download/v1.0.0/trade_records.parquet"),
+            ("hs_lookup.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/download/v1.0.0/hs_lookup.parquet")
+        ]
+        
+        for filename, url in files_to_check:
+            dest_path = self.data_dir / filename
+            if not dest_path.exists():
+                try:
+                    print(f"📥 Provisioning {filename} from GitHub...")
+                    response = requests.get(url, stream=True)
+                    response.raise_for_status()
+                    
+                    with open(dest_path, 'wb') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                    print(f"✅ {filename} downloaded successfully.")
+                except Exception as e:
+                    print(f"❌ Failed to download {filename}: {e}")
     
     def _initialize_views(self):
         """Create DuckDB views from Parquet files."""
