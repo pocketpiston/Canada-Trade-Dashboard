@@ -54,10 +54,10 @@ class TradeDatabase:
         # Ensure directory exists
         self.data_dir.mkdir(parents=True, exist_ok=True)
         
-        # Target files
+        # Target files (Using the 'latest' release alias for robustness)
         files_to_check = [
-            ("trade_records.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/download/v1.0.0/trade_records.parquet"),
-            ("hs_lookup.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/download/v1.0.0/hs_lookup.parquet")
+            ("trade_records.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/latest/download/trade_records.parquet"),
+            ("hs_lookup.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/latest/download/hs_lookup.parquet")
         ]
         
         for filename, url in files_to_check:
