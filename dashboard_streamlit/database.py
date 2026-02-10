@@ -45,54 +45,108 @@ class TradeDatabase:
     def _initialize_views(self):
         """Create DuckDB views from Parquet files."""
         
-        # Main trade data view
-        self.conn.execute(f"""
-            CREATE OR REPLACE VIEW trade_records AS
-            SELECT * FROM read_parquet('{self.trade_parquet_pattern}')
-        """)
+        # Check if files exist to avoid DuckDB errors
+        import glob
+        trade_files = glob.glob(self.trade_parquet_pattern)
         
-        # HS code lookup view
-        self.conn.execute(f"""
-            CREATE OR REPLACE VIEW hs_lookup AS
-            SELECT * FROM read_parquet('{self.hs_lookup_parquet}')
-        """)
+        if not trade_files:
+            # Create empty view with correct schema if possible, or just a dummy
+            # For now, we'll let it fail or create a dummy to allow app to load
+            self.conn.execute("""
+                CREATE OR REPLACE VIEW trade_records AS 
+                SELECT 
+                    CAST(NULL AS DATE) as date,
+                    CAST(NULL AS INTEGER) as year,
+                    CAST(NULL AS VARCHAR) as province,
+                    CAST(NULL AS VARCHAR) as destination,
+                    CAST(NULL AS VARCHAR) as trade_type,
+                    CAST(NULL AS VARCHAR) as hs_chapter,
+                    CAST(NULL AS VARCHAR) as chapter,
+                    CAST(NULL AS VARCHAR) as hs_heading,
+                    CAST(NULL AS VARCHAR) as heading,
+                    CAST(NULL AS VARCHAR) as hs_code,
+                    CAST(NULL AS VARCHAR) as commodity,
+                    CAST(0 AS DOUBLE) as value
+                WHERE 1=0
+            """)
+        else:
+            # Main trade data view
+            self.conn.execute(f"""
+                CREATE OR REPLACE VIEW trade_records AS
+                SELECT * FROM read_parquet('{self.trade_parquet_pattern}')
+            """)
+        
+        if not self.hs_lookup_parquet.exists():
+             self.conn.execute("""
+                CREATE OR REPLACE VIEW hs_lookup AS 
+                SELECT CAST(NULL AS VARCHAR) as hs_chapter, CAST(NULL AS VARCHAR) as summary
+                WHERE 1=0
+            """)
+        else:
+            # HS code lookup view
+            self.conn.execute(f"""
+                CREATE OR REPLACE VIEW hs_lookup AS
+                SELECT * FROM read_parquet('{self.hs_lookup_parquet}')
+            """)
     
     def get_common_options(self) -> Dict[str, Any]:
         """
         Get common filter options (static chunks like Dates, Trade Types).
         Provinces and Destinations are fetched dynamically now.
         """
-        # Get HS chapters with descriptions (Filtered by existence? Keep global for now or filter?)
-        # Let's keep Chapters global for performance, or filter if requested.
-        chapters = self.conn.execute("""
-            SELECT DISTINCT hs_chapter, chapter
-            FROM trade_records
-            WHERE hs_chapter IS NOT NULL
-            ORDER BY hs_chapter
-        """).df().to_dict('records')
-        
-        # Get date range
-        date_range = self.conn.execute("""
-            SELECT 
-                MIN(date) as min_date,
-                MAX(date) as max_date,
-                MIN(year) as min_year,
-                MAX(year) as max_year
-            FROM trade_records
-        """).df().iloc[0].to_dict()
-        
-        # Get trade types
-        trade_types = self.conn.execute("""
-            SELECT DISTINCT trade_type
-            FROM trade_records
-            ORDER BY trade_type
-        """).df()['trade_type'].tolist()
-        
-        return {
-            'chapters': chapters,
-            'date_range': date_range,
-            'trade_types': trade_types
-        }
+        try:
+            # Get HS chapters with descriptions
+            chapters = self.conn.execute("""
+                SELECT DISTINCT hs_chapter, chapter
+                FROM trade_records
+                WHERE hs_chapter IS NOT NULL
+                ORDER BY hs_chapter
+            """).df().to_dict('records')
+            
+            # Get date range
+            date_res = self.conn.execute("""
+                SELECT 
+                    MIN(date) as min_date,
+                    MAX(date) as max_date,
+                    MIN(year) as min_year,
+                    MAX(year) as max_year
+                FROM trade_records
+            """).df()
+            
+            if date_res.empty or date_res.iloc[0]['min_date'] is None:
+                # Fallback for empty data
+                date_range = {
+                    'min_date': '2023-01-01',
+                    'max_date': '2025-12-31',
+                    'min_year': 2023,
+                    'max_year': 2025
+                }
+            else:
+                date_range = date_res.iloc[0].to_dict()
+            
+            # Get trade types
+            trade_types = self.conn.execute("""
+                SELECT DISTINCT trade_type
+                FROM trade_records
+                WHERE trade_type IS NOT NULL
+                ORDER BY trade_type
+            """).df()['trade_type'].tolist()
+            
+            if not trade_types:
+                trade_types = ['Export', 'Import']
+                
+            return {
+                'chapters': chapters,
+                'date_range': date_range,
+                'trade_types': trade_types
+            }
+        except Exception as e:
+            # absolute fallback
+            return {
+                'chapters': [],
+                'date_range': {'min_date': '2023-01-01', 'max_date': '2025-12-31', 'min_year': 2023, 'max_year': 2025},
+                'trade_types': ['Export', 'Import']
+            }
 
     def get_provinces(self, trade_type: str = 'All') -> List[str]:
         """Get provinces, optionally filtered by trade type."""
