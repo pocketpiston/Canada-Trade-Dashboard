@@ -9,7 +9,6 @@ import duckdb
 import pandas as pd
 from pathlib import Path
 from typing import Dict, List, Any
-import streamlit as st
 
 
 class TradeDatabase:
@@ -19,9 +18,6 @@ class TradeDatabase:
     Uses DuckDB to query Parquet files directly without loading into memory.
     All queries are optimized for dashboard use cases.
     """
-    
-    # GitHub Release URL for data download
-    DATA_RELEASE_URL = "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/download/v1.0.0/trade_records.parquet"
     
     def __init__(self, data_dir: str = None):
         """
@@ -36,75 +32,15 @@ class TradeDatabase:
             self.data_dir = base_dir / "data" / "processed"
         else:
             self.data_dir = Path(data_dir)
-        
-        # Ensure directory exists
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-        
+            
         self.trade_parquet_pattern = str(self.data_dir / "trade_records*.parquet")
-        self.trade_parquet_file = self.data_dir / "trade_records.parquet"
         self.hs_lookup_parquet = self.data_dir / "hs_lookup.parquet"
-        
-        # Auto-download data if missing
-        if not self.trade_parquet_file.exists():
-            self._download_trade_data()
         
         # Create in-memory DuckDB connection
         self.conn = duckdb.connect(':memory:')
         
         # Initialize views
         self._initialize_views()
-    
-    def _download_trade_data(self):
-        """Download trade data from GitHub Releases if not present."""
-        import requests
-        
-        st.info("📥 Downloading trade data (350 MB)... This will take a few minutes on first run.")
-        
-        try:
-            # Stream download with progress bar
-            response = requests.get(self.DATA_RELEASE_URL, stream=True, timeout=300)
-            response.raise_for_status()
-            
-            total_size = int(response.headers.get('content-length', 0))
-            
-            if total_size > 0:
-                progress_bar = st.progress(0, text="Downloading trade data...")
-                downloaded = 0
-                
-                with open(self.trade_parquet_file, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
-                            downloaded += len(chunk)
-                            progress = min(downloaded / total_size, 1.0)
-                            progress_bar.progress(progress, text=f"Downloading: {downloaded / 1024 / 1024:.1f} MB / {total_size / 1024 / 1024:.1f} MB")
-                
-                progress_bar.empty()
-                st.success("✅ Data downloaded successfully! Refresh the page to load the dashboard.")
-                st.stop()
-            else:
-                # Fallback without progress
-                with open(self.trade_parquet_file, 'wb') as f:
-                    f.write(response.content)
-                st.success("✅ Data downloaded successfully! Refresh the page to load the dashboard.")
-                st.stop()
-                
-        except requests.exceptions.RequestException as e:
-            st.error(f"❌ Failed to download data: {e}")
-            st.info("""
-            **Alternative options:**
-            1. Run the data processing scripts locally:
-               ```bash
-               python scripts/extract_all_trade.py
-               python scripts/convert_to_parquet.py
-               ```
-            2. Download manually from: {self.DATA_RELEASE_URL}
-               Place in: `data/processed/trade_records.parquet`
-            """)
-            st.stop()
-        except Exception as e:
-            st.error(f"❌ Unexpected error: {e}")
-            st.stop()
     
     def _initialize_views(self):
         """Create DuckDB views from Parquet files."""
@@ -115,12 +51,11 @@ class TradeDatabase:
             SELECT * FROM read_parquet('{self.trade_parquet_pattern}')
         """)
         
-        # HS code lookup view (optional - may not exist in cloud deployment)
-        if self.hs_lookup_parquet.exists():
-            self.conn.execute(f"""
-                CREATE OR REPLACE VIEW hs_lookup AS
-                SELECT * FROM read_parquet('{self.hs_lookup_parquet}')
-            """)
+        # HS code lookup view
+        self.conn.execute(f"""
+            CREATE OR REPLACE VIEW hs_lookup AS
+            SELECT * FROM read_parquet('{self.hs_lookup_parquet}')
+        """)
     
     def get_common_options(self) -> Dict[str, Any]:
         """
@@ -416,6 +351,232 @@ class TradeDatabase:
             where_parts.append('1=1')
         
         return where_parts
+    
+    def query_concentration_metrics(self, filters: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate concentration risk metrics for market and product dependencies.
+        
+        Args:
+            filters: Standard filter dictionary
+            
+        Returns:
+            Dictionary with:
+                - market_concentration: {top1_pct, top3_pct, top5_pct, top_countries: [{country, value, pct}, ...]}
+                - product_concentration: {top1_pct, top3_pct, top5_pct, top_chapters: [{chapter, value, pct}, ...]}
+                - dependency_matrix: [{province, country, value, pct_of_province_total}, ...]
+        """
+        where_parts = self._build_where_clause(filters)
+        where_clause = ' AND '.join(where_parts)
+        
+        # Market Concentration (by country)
+        market_query = f"""
+        WITH country_totals AS (
+            SELECT 
+                destination,
+                SUM(value) as value
+            FROM trade_records
+            WHERE {where_clause}
+            GROUP BY destination
+        ),
+        total AS (
+            SELECT SUM(value) as total_value FROM country_totals
+        )
+        SELECT 
+            destination,
+            value,
+            ROUND(100.0 * value / total.total_value, 2) as pct
+        FROM country_totals, total
+        ORDER BY value DESC
+        LIMIT 10
+        """
+        market_data = self.conn.execute(market_query).df().to_dict('records')
+        
+        # Calculate top-N percentages
+        top1_market = market_data[0]['pct'] if len(market_data) > 0 else 0
+        top3_market = sum([d['pct'] for d in market_data[:3]]) if len(market_data) >= 3 else 0
+        top5_market = sum([d['pct'] for d in market_data[:5]]) if len(market_data) >= 5 else 0
+        
+        # Product Concentration (by HS chapter)
+        product_query = f"""
+        WITH chapter_totals AS (
+            SELECT 
+                hs_chapter,
+                chapter,
+                SUM(value) as value
+            FROM trade_records
+            WHERE {where_clause} AND hs_chapter IS NOT NULL
+            GROUP BY hs_chapter, chapter
+        ),
+        total AS (
+            SELECT SUM(value) as total_value FROM chapter_totals
+        )
+        SELECT 
+            hs_chapter,
+            chapter,
+            value,
+            ROUND(100.0 * value / total.total_value, 2) as pct
+        FROM chapter_totals, total
+        ORDER BY value DESC
+        LIMIT 10
+        """
+        product_data = self.conn.execute(product_query).df().to_dict('records')
+        
+        top1_product = product_data[0]['pct'] if len(product_data) > 0 else 0
+        top3_product = sum([d['pct'] for d in product_data[:3]]) if len(product_data) >= 3 else 0
+        top5_product = sum([d['pct'] for d in product_data[:5]]) if len(product_data) >= 5 else 0
+        
+        # Dependency Matrix (Province × Country)
+        # Only calculate if no province filter is applied
+        dependency_matrix = []
+        if filters.get('province') == 'All' or 'province' not in filters:
+            matrix_query = f"""
+            WITH province_country AS (
+                SELECT 
+                    province,
+                    destination,
+                    SUM(value) as value
+                FROM trade_records
+                WHERE {where_clause} AND province != 'Canada (Total)'
+                GROUP BY province, destination
+            ),
+            province_totals AS (
+                SELECT 
+                    province,
+                    SUM(value) as total
+                FROM province_country
+                GROUP BY province
+            )
+            SELECT 
+                pc.province,
+                pc.destination,
+                pc.value,
+                ROUND(100.0 * pc.value / pt.total, 2) as pct_of_province_total
+            FROM province_country pc
+            JOIN province_totals pt ON pc.province = pt.province
+            WHERE pc.value > 0
+            ORDER BY pc.province, pc.value DESC
+            """
+            dependency_matrix = self.conn.execute(matrix_query).df().to_dict('records')
+        
+        return {
+            'market_concentration': {
+                'top1_pct': top1_market,
+                'top3_pct': top3_market,
+                'top5_pct': top5_market,
+                'top_countries': market_data
+            },
+            'product_concentration': {
+                'top1_pct': top1_product,
+                'top3_pct': top3_product,
+                'top5_pct': top5_product,
+                'top_chapters': product_data
+            },
+            'dependency_matrix': dependency_matrix
+        }
+    
+    def query_sankey_data(self, filters: Dict[str, Any], flow_type: str = 'export') -> Dict[str, Any]:
+        """
+        Get data for Sankey diagram showing trade flows.
+        
+        Args:
+            filters: Standard filter dictionary
+            flow_type: 'export' (Province → Country → Chapter) or 'import' (Country → Province → Chapter)
+            
+        Returns:
+            Dictionary with nodes and links for Sankey diagram
+        """
+        where_parts = self._build_where_clause(filters)
+        where_clause = ' AND '.join(where_parts)
+        
+        # Get flow data: Province → Country → Chapter
+        flow_query = f"""
+        SELECT 
+            province,
+            destination,
+            hs_chapter,
+            chapter,
+            SUM(value) as value
+        FROM trade_records
+        WHERE {where_clause} 
+            AND province != 'Canada (Total)'
+            AND hs_chapter IS NOT NULL
+        GROUP BY province, destination, hs_chapter, chapter
+        HAVING SUM(value) > 0
+        ORDER BY value DESC
+        LIMIT 200
+        """
+        flows = self.conn.execute(flow_query).df()
+        
+        return {
+            'flows': flows.to_dict('records')
+        }
+    
+    def query_province_comparison_metrics(self, filters: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        Get comparison metrics for all provinces.
+        
+        Args:
+            filters: Standard filter dictionary (province filter will be ignored)
+            
+        Returns:
+            List of dictionaries with metrics for each province:
+                - province: str
+                - total_value: float
+                - num_countries: int (market diversification)
+                - num_chapters: int (product diversification)
+                - top_destination: str
+                - top_chapter: str
+                - growth_rate: float (YoY if applicable)
+        """
+        # Build where clause without province filter
+        filters_copy = filters.copy()
+        filters_copy['province'] = 'All'
+        where_parts = self._build_where_clause(filters_copy)
+        where_clause = ' AND '.join(where_parts)
+        
+        query = f"""
+        WITH province_stats AS (
+            SELECT 
+                province,
+                SUM(value) as total_value,
+                COUNT(DISTINCT destination) as num_countries,
+                COUNT(DISTINCT hs_chapter) as num_chapters
+            FROM trade_records
+            WHERE {where_clause} AND province != 'Canada (Total)'
+            GROUP BY province
+        ),
+        top_destinations AS (
+            SELECT 
+                province,
+                destination as top_destination,
+                ROW_NUMBER() OVER (PARTITION BY province ORDER BY SUM(value) DESC) as rn
+            FROM trade_records
+            WHERE {where_clause} AND province != 'Canada (Total)'
+            GROUP BY province, destination
+        ),
+        top_chapters AS (
+            SELECT 
+                province,
+                hs_chapter || ' - ' || chapter as top_chapter,
+                ROW_NUMBER() OVER (PARTITION BY province ORDER BY SUM(value) DESC) as rn
+            FROM trade_records
+            WHERE {where_clause} AND province != 'Canada (Total)' AND hs_chapter IS NOT NULL
+            GROUP BY province, hs_chapter, chapter
+        )
+        SELECT 
+            ps.province,
+            ps.total_value,
+            ps.num_countries,
+            ps.num_chapters,
+            td.top_destination,
+            tc.top_chapter
+        FROM province_stats ps
+        LEFT JOIN top_destinations td ON ps.province = td.province AND td.rn = 1
+        LEFT JOIN top_chapters tc ON ps.province = tc.province AND tc.rn = 1
+        ORDER BY ps.total_value DESC
+        """
+        
+        return self.conn.execute(query).df().to_dict('records')
     
     def close(self):
         """Close database connection."""

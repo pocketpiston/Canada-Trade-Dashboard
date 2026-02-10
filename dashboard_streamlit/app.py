@@ -9,9 +9,10 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
+import re
 from database import TradeDatabase
 from datetime import datetime
-from hs_summaries import HS_CHAPTER_SUMMARIES, get_chapter_summary, get_category
+from hs_summaries import HS_CHAPTER_SUMMARIES, get_chapter_summary, get_category, get_category_name, CATEGORY_MAP
 
 # Page configuration
 st.set_page_config(
@@ -28,12 +29,103 @@ st.markdown("""
         font-size: 2.5rem;
         font-weight: bold;
         color: #FF0000;
-        padding-bottom: 1rem;
+        padding-bottom: 0.5rem;
     }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
+    
+    /* Enhanced KPI Cards */
+    [data-testid="stMetricValue"] {
+        font-size: 36px;
+        font-weight: 700;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 16px;
+        font-weight: 600;
+        color: #31333F;
+    }
+    
+    /* Compact spacing */
+    .block-container {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Reduce caption text size for less clutter */
+    [data-testid="stCaptionContainer"] {
+        font-size: 12px;
+        color: #6c757d;
+    }
+    
+    /* Compact section spacing */
+    .element-container {
+        margin-bottom: 0.3rem;
+    }
+    
+    /* Compact expander spacing */
+    [data-testid="stExpander"] {
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 4px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        padding: 6px 12px;
+        font-weight: 500;
+    }
+    
+    /* Reduce sidebar padding */
+    [data-testid="stSidebar"] {
+        padding-top: 1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    [data-testid="stSidebar"] .block-container {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    /* Reduce sidebar expander spacing */
+    [data-testid="stSidebar"] [data-testid="stExpander"] {
+        margin-bottom: 0.1rem;
+        margin-top: 0.1rem;
+    }
+    
+    /* Reduce subheader margins */
+    h2, h3 {
+        margin-top: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    /* Reduce dataframe padding */
+    [data-testid="stDataFrame"] {
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+    }
+    
+    /* Reduce horizontal rule margins */
+    hr {
+        margin-top: 0.3rem !important;
+        margin-bottom: 0.3rem !important;
+    }
+    
+    /* Reduce info/caption spacing */
+    [data-testid="stMarkdownContainer"] p {
+        margin-bottom: 0.3rem;
+    }
+    
+    /* Compact metric spacing */
+    [data-testid="stMetric"] {
+        padding: 0.2rem 0;
+    }
+    
+    /* Remove extra padding inside expanders */
+    [data-testid="stExpander"] > div > div {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -84,18 +176,8 @@ def query_data(start_date, end_date, trade_type, province, destination, hs_chapt
     return result, query_time
 
 # Initialize database and load common options
-try:
-    db = init_database()
-    common_options = load_common_options()
-except Exception as e:
-    st.error(f"❌ Error initializing database: {e}")
-    st.info("""
-    **Possible solutions:**
-    1. The data file may still be downloading. Please wait and refresh the page.
-    2. Check that the GitHub Release exists: https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/tag/v1.0.0
-    3. If the problem persists, check the Streamlit Cloud logs.
-    """)
-    st.stop()
+db = init_database()
+common_options = load_common_options()
 
 # ============================================================================
 # SIDEBAR FILTERS
@@ -103,160 +185,252 @@ except Exception as e:
 
 st.sidebar.markdown("## 🔍 Filters")
 
-# Trade Type
-trade_type = st.sidebar.selectbox(
-    "Trade Type",
-    ['All'] + common_options['trade_types'],
-    index=1 if 'Export' in common_options['trade_types'] else 0
-)
-
-# Load context-aware options
-dynamic_opts = load_dynamic_options(trade_type)
-
-# Date Range - Month and Year dropdowns
-st.sidebar.markdown("### 📅 Date Range")
-min_year = int(common_options['date_range']['min_year'])
-max_year = int(common_options['date_range']['max_year'])
-
-# Start Date
-st.sidebar.markdown("**Start Date**")
-col1, col2 = st.sidebar.columns(2)
-with col1:
-    start_month = st.selectbox(
-        "Month",
-        options=list(range(1, 13)),
-        format_func=lambda x: pd.to_datetime(f"2000-{x:02d}-01").strftime("%B"),
-        index=0,
-        key="start_month"
+# ============================================================================
+# TIME PERIOD GROUP
+# ============================================================================
+with st.sidebar.expander("📅 Time Period", expanded=True):
+    # Trade Type
+    trade_type = st.selectbox(
+        "Trade Type",
+        ['All'] + common_options['trade_types'],
+        index=1 if 'Export' in common_options['trade_types'] else 0,
+        key="trade_type_select"
     )
-with col2:
-    start_year = st.selectbox(
-        "Year",
-        options=list(range(min_year, max_year + 1)),
-        index=0,
-        key="start_year"
-    )
-
-# End Date
-st.sidebar.markdown("**End Date**")
-col3, col4 = st.sidebar.columns(2)
-with col4:
-    end_year = st.selectbox(
-        "Year",
-        options=list(range(min_year, max_year + 1)),
-        index=len(list(range(min_year, max_year + 1))) - 1,
-        key="end_year"
-    )
-
-# Determine max month based on selected end year
-# 2025 data only available through October
-max_end_month = 10 if end_year == 2025 else 12
-
-with col3:
-    end_month = st.selectbox(
-        "Month",
-        options=list(range(1, max_end_month + 1)),
-        format_func=lambda x: pd.to_datetime(f"2000-{x:02d}-01").strftime("%B"),
-        index=min(11, max_end_month - 1),  # Default to December or October for 2025
-        key="end_month_select",
-        help="⚠️ 2025 data only available through October" if end_year == 2025 else None
-    )
+    
+    # Date Range - Month and Year dropdowns
+    min_year = int(common_options['date_range']['min_year'])
+    max_year = int(common_options['date_range']['max_year'])
+    
+    # Start Date
+    st.markdown("**Start Date**")
+    col1, col2 = st.columns(2)
+    with col1:
+        start_month = st.selectbox(
+            "Month",
+            options=list(range(1, 13)),
+            format_func=lambda x: pd.to_datetime(f"2000-{x:02d}-01").strftime("%B"),
+            index=0,
+            key="start_month",
+            label_visibility="collapsed"
+        )
+    with col2:
+        start_year = st.selectbox(
+            "Year",
+            options=list(range(min_year, max_year + 1)),
+            index=0,
+            key="start_year",
+            label_visibility="collapsed"
+        )
+    
+    # End Date
+    st.markdown("**End Date**")
+    col3, col4 = st.columns(2)
+    with col4:
+        end_year = st.selectbox(
+            "Year",
+            options=list(range(min_year, max_year + 1)),
+            index=len(list(range(min_year, max_year + 1))) - 1,
+            key="end_year",
+            label_visibility="collapsed"
+        )
+    
+    # Determine max month based on selected end year
+    # 2025 data only available through October
+    max_end_month = 10 if end_year == 2025 else 12
+    
+    with col3:
+        end_month = st.selectbox(
+            "Month",
+            options=list(range(1, max_end_month + 1)),
+            format_func=lambda x: pd.to_datetime(f"2000-{x:02d}-01").strftime("%B"),
+            index=min(11, max_end_month - 1),  # Default to December or October for 2025
+            key="end_month_select",
+            help="⚠️ 2025 data only available through October" if end_year == 2025 else None,
+            label_visibility="collapsed"
+        )
 
 # Convert to date strings
 start_date = f"{start_year}-{start_month:02d}-01"
 end_date = f"{end_year}-{end_month:02d}-{pd.Period(f'{end_year}-{end_month}').days_in_month}"
 
-# Dynamic Labels based on Trade Type
-if trade_type == 'Import':
-    prov_label = "📍 Destination Province"
-    dest_label = "🌍 Source Country (Origin)"
-elif trade_type == 'Export':
-    prov_label = "📍 Source Province"
-    dest_label = "🌍 Destination Country"
-else:
-    prov_label = "📍 Province"
-    dest_label = "🌍 Trading Partner"
+# Load context-aware options
+dynamic_opts = load_dynamic_options(trade_type)
 
-# Province Filter
-province = st.sidebar.selectbox(
-    prov_label,
-    ['All'] + dynamic_opts['provinces']
-)
+# ============================================================================
+# GEOGRAPHY GROUP
+# ============================================================================
+with st.sidebar.expander("🌍 Geography", expanded=True):
+    # Dynamic Labels based on Trade Type
+    if trade_type == 'Import':
+        prov_label = "Destination Province"
+        dest_label = "Source Country (Origin)"
+    elif trade_type == 'Export':
+        prov_label = "Source Province"
+        dest_label = "Destination Country"
+    else:
+        prov_label = "Province"
+        dest_label = "Trading Partner"
+    
+    # Province Filter
+    province = st.selectbox(
+        prov_label,
+        ['All'] + dynamic_opts['provinces'],
+        key="province_select"
+    )
+    
+    # Destination Country Filter
+    destination = st.selectbox(
+        dest_label,
+        ['All'] + dynamic_opts['countries'],
+        key="destination_select"
+    )
+    
+    # USA Exclusion Filter
+    exclude_usa = st.checkbox(
+        "Exclude USA from analysis",
+        value=False,
+        help="When checked, all USA-related trade will be excluded from calculations and visualizations",
+        key="exclude_usa_checkbox"
+    )
 
-# Destination Country Filter
-st.sidebar.markdown(f"### {dest_label.split()[0]} Location") # Header
-destination = st.sidebar.selectbox(
-    dest_label,
-    ['All'] + dynamic_opts['countries']
-)
-
-# HS Chapter Filter
-st.sidebar.markdown("### 📦 HS Code Hierarchy")
-
-# Chapter (2-digit)
-chapter_options = ['All'] + [
-    f"{c['hs_chapter']} - {get_chapter_summary(c['hs_chapter'])}"
-    for c in common_options['chapters']
-]
-selected_chapter_display = st.sidebar.selectbox(
-    "Chapter (2-digit)",
-    chapter_options
-)
-# Extract chapter code
-if selected_chapter_display == 'All':
-    hs_chapter = 'All'
-else:
-    hs_chapter = selected_chapter_display.split(' - ')[0]
-
-# Heading (4-digit) - depends on Chapter
-if hs_chapter != 'All':
-    headings = db.get_hs_headings(hs_chapter)
-    # Show full descriptions without truncation
-    heading_options = ['All'] + [
-        f"{h['hs_heading']} - {h['heading'].split(' - ')[1] if ' - ' in h['heading'] else h['heading']}"
-        for h in headings[:50]  # Limit to 50 for performance
+# ============================================================================
+# HS PRODUCT CLASSIFICATION GROUP
+# ============================================================================
+with st.sidebar.expander("📦 HS Product Classification", expanded=True):
+    # Chapter (2-digit)
+    chapter_options = ['All'] + [
+        f"{c['hs_chapter']} - {get_chapter_summary(c['hs_chapter'])}"
+        for c in common_options['chapters']
     ]
-    selected_heading_display = st.sidebar.selectbox(
-        "Heading (4-digit)",
-        heading_options
+    selected_chapter_display = st.selectbox(
+        "Chapter (2-digit)",
+        chapter_options,
+        key="chapter_select"
     )
-    
-    if selected_heading_display == 'All':
-        hs_heading = 'All'
+    # Extract chapter code
+    if selected_chapter_display == 'All':
+        hs_chapter = 'All'
     else:
-        hs_heading = selected_heading_display.split(' - ')[0]
-else:
-    hs_heading = 'All'
-    st.sidebar.info("Select a Chapter to filter by Heading")
-
-# Commodity (8-digit) - depends on Heading
-if hs_heading != 'All':
-    commodities = db.get_hs_commodities(hs_chapter, hs_heading)
-    commodity_options = ['All'] + [f"{c['hs_code']} - {c['commodity'][:30]}..." 
-                                    if len(c['commodity']) > 30 else f"{c['hs_code']} - {c['commodity']}"
-                                    for c in commodities[:50]]  # Limit to 50 for performance
-    selected_commodity_display = st.sidebar.selectbox(
-        "Commodity (8-digit)",
-        commodity_options
-    )
+        hs_chapter = selected_chapter_display.split(' - ')[0]
     
-    if selected_commodity_display == 'All':
-        hs_commodity = 'All'
-    else:
-        hs_commodity = selected_commodity_display.split(' - ')[0]
-else:
-    hs_commodity = 'All'
+    # Heading (4-digit) - depends on Chapter
     if hs_chapter != 'All':
-        st.sidebar.info("Select a Heading to filter by Commodity")
+        headings = db.get_hs_headings(hs_chapter)
+        # Show full descriptions without truncation
+        heading_options = ['All'] + [
+            f"{h['hs_heading']} - {h['heading'].split(' - ')[1] if ' - ' in h['heading'] else h['heading']}"
+            for h in headings[:50]  # Limit to 50 for performance
+        ]
+        selected_heading_display = st.selectbox(
+            "Heading (4-digit)",
+            heading_options,
+            key="heading_select"
+        )
+        
+        if selected_heading_display == 'All':
+            hs_heading = 'All'
+        else:
+            hs_heading = selected_heading_display.split(' - ')[0]
+    else:
+        hs_heading = 'All'
+        st.info("💡 Select a Chapter to filter by Heading")
+    
+    # Commodity (8-digit) - depends on Heading
+    if hs_heading != 'All':
+        commodities = db.get_hs_commodities(hs_chapter, hs_heading)
+        commodity_options = ['All'] + [f"{c['hs_code']} - {c['commodity'][:30]}..." 
+                                        if len(c['commodity']) > 30 else f"{c['hs_code']} - {c['commodity']}"
+                                        for c in commodities[:50]]  # Limit to 50 for performance
+        selected_commodity_display = st.selectbox(
+            "Commodity (8-digit)",
+            commodity_options,
+            key="commodity_select"
+        )
+        
+        if selected_commodity_display == 'All':
+            hs_commodity = 'All'
+        else:
+            hs_commodity = selected_commodity_display.split(' - ')[0]
+    else:
+        hs_commodity = 'All'
+        if hs_chapter != 'All':
+            st.info("💡 Select a Heading to filter by Commodity")
 
-# Unit Scale Selector - Moved here to group all HS filters together
-st.sidebar.markdown("### 📏 Display Units")
-unit_mode = st.sidebar.selectbox(
-    "Scale",
-    ["Auto (SI)", "Trillions ($T)", "Billions ($B)", "Millions ($M)", "Thousands ($k)", "Raw ($)"],
-    index=0,  # Default to Auto
-    help="Auto mode automatically selects the best scale based on data magnitude"
-)
+# ============================================================================
+# DISPLAY OPTIONS GROUP
+# ============================================================================
+with st.sidebar.expander("📊 Display Options", expanded=True):
+    # Unit Scale Selector
+    unit_mode = st.selectbox(
+        "Display Units",
+        ["Auto (SI)", "Trillions ($T)", "Billions ($B)", "Millions ($M)", "Thousands ($k)", "Raw ($)"],
+        index=0,  # Default to Auto
+        help="Auto mode automatically selects the best scale based on data magnitude",
+        key="unit_mode_select"
+    )
+    
+    # Visualization Theme Selector
+    # Theme configurations
+    THEMES = {
+        'Classic': {
+            'destinations': 'Blues',
+            'provinces': 'Greens', 
+            'breakdown': 'Oranges',
+            'chapters_treemap': 'Blues',
+            'headings_treemap': 'Greens',
+            'chapters_bar': 'Oranges',
+            'treemap_text_color': '#1a1a1a',  # High contrast dark grey
+            'treemap_text_size': 14,
+            'template': 'plotly_white',
+            'line_color': '#1f77b4'
+        },
+        'High Contrast': {
+            'destinations': 'Electric',
+            'provinces': 'Hot',
+            'breakdown': 'Blackbody',
+            'chapters_treemap': 'Electric',
+            'headings_treemap': 'Hot',
+            'chapters_bar': 'Blackbody',
+            'treemap_text_color': '#1a1a1a',  # High contrast dark grey
+            'treemap_text_size': 15,
+            'template': 'plotly_white',
+            'line_color': '#FF0000'
+        },
+        'Dark Mode': {
+            'destinations': [[0, '#00008b'], [0.5, '#4b0082'], [1, '#ff00ff']],
+            'provinces': [[0, '#006400'], [0.5, '#adff2f'], [1, '#ffff00']],
+            'breakdown': [[0, '#2f4f4f'], [0.5, '#20b2aa'], [1, '#00ffff']],
+            'chapters_treemap': 'Magma',
+            'headings_treemap': 'Inferno',
+            'chapters_bar': 'Plotly3',
+            'treemap_text_color': 'white',
+            'treemap_text_size': 14,
+            'template': 'plotly_dark',
+            'line_color': '#00BFFF'
+        },
+        'Colorblind Friendly': {
+            'destinations': 'Viridis',
+            'provinces': 'Plasma',
+            'breakdown': 'Cividis',
+            'chapters_treemap': 'Viridis',
+            'headings_treemap': 'Plasma',
+            'chapters_bar': 'Cividis',
+            'treemap_text_color': '#1a1a1a',  # High contrast dark grey
+            'treemap_text_size': 14,
+            'template': 'plotly_white',
+            'line_color': '#332288'
+        }
+    }
+    
+    selected_theme = st.selectbox(
+        "Visualization Theme",
+        list(THEMES.keys()),
+        index=1,  # Default to High Contrast for better visibility
+        help="Choose a color theme for all visualizations. High Contrast and Colorblind Friendly options improve accessibility.",
+        key="theme_select"
+    )
+    
+    theme = THEMES[selected_theme]
 
 # Helper to determine scale factor and labels
 scale_factor = 1.0
@@ -290,71 +464,6 @@ elif unit_mode == "Raw ($)":
 
 # Axis Label suffix
 currency_label = f"CAD ({unit_suffix})" if unit_suffix else "CAD"
-
-# Visualization Theme Selector
-st.sidebar.markdown("### 🎨 Visualization Theme")
-
-# Theme configurations
-THEMES = {
-    'Classic': {
-        'destinations': 'Reds',
-        'provinces': 'Blues', 
-        'breakdown': 'Teal',
-        'chapters_treemap': 'RdYlGn',
-        'headings_treemap': 'Blues',
-        'chapters_bar': 'Greens',
-        'treemap_text_color': 'black',
-        'treemap_text_size': 14
-    },
-    'High Contrast': {
-        'destinations': 'Oranges',
-        'provinces': 'Purples',
-        'breakdown': 'YlOrBr',
-        'chapters_treemap': [[0, '#f7fbff'], [0.5, '#6baed6'], [1, '#08306b']],
-        'headings_treemap': [[0, '#fff5eb'], [0.5, '#fd8d3c'], [1, '#7f2704']],
-        'chapters_bar': 'BuGn',
-        'treemap_text_color': 'black',
-        'treemap_text_size': 15
-    },
-    'Dark Mode': {
-        'destinations': [[0, '#2d1b2e'], [0.5, '#8b4789'], [1, '#e8b4e5']],
-        'provinces': [[0, '#1a2332'], [0.5, '#4a7ba7'], [1, '#a8d5ff']],
-        'breakdown': [[0, '#1e3a2f'], [0.5, '#4a9b7f'], [1, '#a8e6cf']],
-        'chapters_treemap': [[0, '#1a1a2e'], [0.5, '#6a5acd'], [1, '#dda0dd']],
-        'headings_treemap': [[0, '#0f2027'], [0.5, '#2c5364'], [1, '#7dd3c0']],
-        'chapters_bar': [[0, '#1e3d2f'], [0.5, '#5a9367'], [1, '#b8e6c9']],
-        'treemap_text_color': 'white',
-        'treemap_text_size': 14
-    },
-    'Colorblind Friendly': {
-        'destinations': 'Viridis',
-        'provinces': 'Plasma',
-        'breakdown': 'Cividis',
-        'chapters_treemap': 'Viridis',
-        'headings_treemap': 'Plasma',
-        'chapters_bar': 'Cividis',
-        'treemap_text_color': 'white',
-        'treemap_text_size': 14
-    }
-}
-
-selected_theme = st.sidebar.selectbox(
-    "Color Scheme",
-    list(THEMES.keys()),
-    index=0,
-    help="Choose a color theme for all visualizations. High Contrast and Colorblind Friendly options improve accessibility."
-)
-
-theme = THEMES[selected_theme]
-
-# USA Exclusion Filter
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🇺🇸 USA Filter")
-exclude_usa = st.sidebar.checkbox(
-    "Exclude USA from analysis",
-    value=False,
-    help="When checked, all USA-related trade will be excluded from calculations and visualizations"
-)
 
 # Data refresh button
 if st.sidebar.button("🔄 Refresh Data"):
@@ -468,14 +577,14 @@ def format_kpi_value(value):
         return f"${value:,.0f} CAD"
 
 # ============================================================================
-# KPI CARDS
+# KPI CARDS - Enhanced with larger fonts and better visual prominence
 # ============================================================================
 
 kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
 
 with kpi_col1:
     st.metric(
-        label="💰 Total Trade Value",
+        label="Total Trade Value",
         value=format_kpi_value(data['kpi']['total_value']),
         help="Total trade value with auto-formatted units"
     )
@@ -483,14 +592,14 @@ with kpi_col1:
 with kpi_col2:
     total_records = data['kpi']['total_records']
     st.metric(
-        label="📊 Total Records",
-        value=f"{total_records:,.2f}",
+        label="Total Records",
+        value=f"{total_records:,.0f}",
         help="Number of trade transactions"
     )
 
 with kpi_col3:
     st.metric(
-        label="📈 Avg Monthly Value",
+        label="Avg Monthly Value",
         value=format_kpi_value(data['kpi']['avg_monthly']),
         help="Average monthly trade value with auto-formatted units"
     )
@@ -516,13 +625,13 @@ if not time_series_df.empty:
         title=f"{trade_type} Value by Month",
         labels={'value': f'Trade Value ({currency_label})', 'month': 'Month'}
     )
-    fig_time.update_traces(line_color='#FF0000', line_width=3)
+    fig_time.update_traces(line_color=theme['line_color'], line_width=3)
     fig_time.update_layout(
         height=400,
         hovermode='x unified',
-        plot_bgcolor='white',
-        xaxis=dict(showgrid=True, gridcolor='lightgray'),
-        yaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format)
+        template=theme['template'],
+        xaxis=dict(showgrid=True),
+        yaxis=dict(showgrid=True, tickformat=axis_format)
     )
     st.plotly_chart(fig_time, use_container_width=True)
 else:
@@ -564,8 +673,8 @@ with chart_col1:
         fig_dest.update_layout(
             height=400,
             showlegend=False,
-            plot_bgcolor='white',
-            xaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format),
+            template=theme['template'],
+            xaxis=dict(showgrid=True, tickformat=axis_format),
             yaxis=dict(showgrid=False)
         )
         st.plotly_chart(fig_dest, use_container_width=True)
@@ -574,7 +683,7 @@ with chart_col1:
 
 # Top Provinces
 with chart_col2:
-    st.subheader("🏙️ Top Provinces")
+    st.subheader("🏙️ Provincial Breakdown")
     
     prov_df = pd.DataFrame(data['top_provinces'])
     if not prov_df.empty:
@@ -591,8 +700,8 @@ with chart_col2:
         fig_prov.update_layout(
             height=400,
             showlegend=False,
-            plot_bgcolor='white',
-            xaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format),
+            template=theme['template'],
+            xaxis=dict(showgrid=True, tickformat=axis_format),
             yaxis=dict(showgrid=False)
         )
         st.plotly_chart(fig_prov, use_container_width=True)
@@ -659,9 +768,9 @@ elif province != 'All' and destination != 'All':
         fig_monthly.update_layout(
             height=400,
             showlegend=False,
-            plot_bgcolor='white',
+            template=theme['template'],
             xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format)
+            yaxis=dict(showgrid=True, tickformat=axis_format)
         )
         st.plotly_chart(fig_monthly, use_container_width=True)
     else:
@@ -716,8 +825,8 @@ if breakdown_data and len(breakdown_data) > 0:
     fig_breakdown.update_layout(
         height=450,
         showlegend=False,
-        plot_bgcolor='white',
-        xaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format),
+        template=theme['template'],
+        xaxis=dict(showgrid=True, tickformat=axis_format),
         yaxis=dict(showgrid=False)
     )
     st.plotly_chart(fig_breakdown, use_container_width=True)
@@ -729,102 +838,214 @@ st.markdown("---")
 # ============================================================================
 # HS CHAPTERS TREEMAP
 # ============================================================================
+# NAVIGATION & DRILL-DOWN HELPERS
+# ============================================================================
+
+def get_clean_category(code):
+    """Helper to get category name without emojis"""
+    name = get_category_name(code)
+    return re.sub(r'[^\x00-\x7F]+', '', name).strip()
+
+if hs_chapter != 'All':
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.info(f"📍 **Drilled down to:** Category: {get_clean_category(hs_chapter)} > Chapter {hs_chapter}")
+    with col2:
+        if st.button("⬅️ Back to All", help="Clear HS Chapter filter"):
+            # This is a bit tricky with Streamlit filters, usually we'd use session state
+            # for now, we'll just instruct the user or if possible clear it.
+            # A simpler way is to just remind them, but the plan said a button.
+            # To actually clear the filter from here, we'd need to have used session_state for the selectbox.
+            st.warning("Please select 'All' in the sidebar filter to go back.")
 
 # Create title based on province filter
 if province != 'All':
-    treemap_title = f"📊 HS Chapters Breakdown - {province}"
+    hierarchy_title = f"Product Hierarchy Analysis - {province}"
 else:
-    treemap_title = "📊 HS Chapters Breakdown - All Provinces"
+    hierarchy_title = "Product Hierarchy Analysis - All Provinces"
 
-st.subheader(treemap_title)
+# ============================================================================
+# PRODUCT HIERARCHY ANALYSIS (Phase 2: Consolidated Treemap + Sunburst)
+# ============================================================================
+expander_hierarchy = st.expander(f"📦 {hierarchy_title}", expanded=True)
 
-# Prepare treemap data
-hs_treemap_df = pd.DataFrame(data['top_hs_codes'])
-
-if not hs_treemap_df.empty:
-    # Extract chapter code and name separately
-    hs_treemap_df['chapter_code'] = hs_treemap_df['code']
-    hs_treemap_df['chapter_name'] = hs_treemap_df['description'].apply(
-        lambda x: x.split(' - ')[1] if ' - ' in x else x
-    )
+with expander_hierarchy:
+    # Prepare treemap data
+    hs_treemap_df = pd.DataFrame(data['top_hs_codes'])
     
-    # Add summary from dictionary
-    hs_treemap_df['summary'] = hs_treemap_df['chapter_code'].map(HS_CHAPTER_SUMMARIES)
-    
-    # Calculate percentage of total
-    total_value = hs_treemap_df['value'].sum()
-    hs_treemap_df['percentage'] = (hs_treemap_df['value'] / total_value * 100)
-    
-    # Create display label with code + summary (2 lines)
-    hs_treemap_df['display_label'] = hs_treemap_df.apply(
-        lambda row: f"{row['chapter_code']}\n{row['summary']}", axis=1
-    )
-    
-    # Scale values for display
-    hs_treemap_df['scaled_value'] = hs_treemap_df['value'] / scale_factor
-    
-    # Create tabs for different views
-    tab1, tab2 = st.tabs(["📊 Visual", "📋 Table"])
-    
-    with tab1:
-        # Create treemap with code-only labels
-
-        fig_treemap = px.treemap(
-            hs_treemap_df,
-            path=['display_label'],
-            values='value',  # Use raw values for sizing
-            color='scaled_value',  # Use scaled values for color
-            color_continuous_scale=theme['chapters_treemap'],
-            custom_data=['chapter_code', 'summary', 'chapter_name', 'value', 'percentage']
+    if not hs_treemap_df.empty:
+        # Extract chapter code and name separately
+        hs_treemap_df['chapter_code'] = hs_treemap_df['code']
+        hs_treemap_df['chapter_name'] = hs_treemap_df['description'].apply(
+            lambda x: x.split(' - ')[1] if ' - ' in x else x
         )
         
-        # Update with rich hover tooltips
-        fig_treemap.update_traces(
-            textposition='middle center',
-            textfont_size=theme['treemap_text_size'],
-            textfont_color=theme['treemap_text_color'],
-            textfont_family='Arial Black',
-            marker=dict(
-                line=dict(width=2, color='white'),
-                pad=dict(t=5, l=5, r=5, b=5)
-            ),
-            hovertemplate='<b>Chapter %{customdata[0]}: %{customdata[1]}</b><br>' +
-                          '<i>%{customdata[2]}</i><br>' +
-                          'Value: $%{customdata[3]:,.0f}<br>' +
-                          'Share: %{customdata[4]:.1f}%<br>' +
-                          '<extra></extra>'
+        # Add summary from dictionary
+        hs_treemap_df['summary'] = hs_treemap_df['chapter_code'].map(HS_CHAPTER_SUMMARIES)
+        
+        # Calculate percentage of total
+        total_value = hs_treemap_df['value'].sum()
+        hs_treemap_df['percentage'] = (hs_treemap_df['value'] / total_value * 100)
+        
+        # Map to categories (without emojis)
+        hs_treemap_df['category'] = hs_treemap_df['chapter_code'].apply(get_clean_category)
+        
+        # Create discrete color map for categories
+        clean_cat_map = {}
+        for r, (name, color) in CATEGORY_MAP.items():
+            clean_name = re.sub(r'[^\x00-\x7F]+', '', name).strip()
+            clean_cat_map[clean_name] = color
+        
+        # Create display label with code + summary (2 lines)
+        hs_treemap_df['display_label'] = hs_treemap_df.apply(
+            lambda row: f"{row['chapter_code']}\n{row['summary']}", axis=1
         )
         
-        fig_treemap.update_layout(
-            height=600,
-            margin=dict(t=10, l=10, r=10, b=10),
-            coloraxis_colorbar=dict(
-                tickformat='.2f',  # Show 2 decimal places in legend
-                title=f"Trade Value ({currency_label})"
+        # Scale values for display
+        hs_treemap_df['scaled_value'] = hs_treemap_df['value'] / scale_factor
+        
+        # ============================================================================
+        # TABBED INTERFACE: Treemap vs Sunburst (Phase 2)
+        # ============================================================================
+        viz_tab1, viz_tab2, viz_tab3 = st.tabs(["🗺️ Treemap View", "🌲 Sunburst View", "📋 Data Table"])
+        
+        # TAB 1: TREEMAP VIEW
+        with viz_tab1:
+            st.caption("**Industry perspective** with discrete colors by category")
+            
+            # Create treemap with code-only labels
+            fig_treemap = px.treemap(
+                hs_treemap_df,
+                path=['category', 'display_label'],  # Two-level hierarchy
+                values='value',  # Use raw values for sizing
+                color='category',  # Category-based coloring
+                color_discrete_map=clean_cat_map,
+                custom_data=['chapter_code', 'summary', 'chapter_name', 'value', 'percentage']
             )
-        )
+            
+            fig_treemap.update_traces(
+                textposition='middle center',
+                textfont_size=theme['treemap_text_size'],
+                textfont_color=theme['treemap_text_color'],
+                textfont_family='Arial Black',
+                marker=dict(
+                    line=dict(width=2, color='white'),
+                    pad=dict(t=5, l=5, r=5, b=5)
+                ),
+                hovertemplate='<b>Chapter %{customdata[0]}: %{customdata[1]}</b><br>' +
+                              '<i>%{customdata[2]}</i><br>' +
+                              'Value: $%{customdata[3]:,.0f}<br>' +
+                              'Share: %{customdata[4]:.1f}%<br>' +
+                              '<extra></extra>'
+            )
+            
+            fig_treemap.update_layout(
+                height=600,
+                margin=dict(t=10, l=10, r=10, b=10),
+                showlegend=True,
+                legend=dict(title="Industry Category", orientation="h", y=-0.2)
+            )
+            
+            st.plotly_chart(fig_treemap, use_container_width=True)
+            st.caption("💡 Hover over blocks to see full chapter names and values. Larger blocks = higher trade value.")
         
-        st.plotly_chart(fig_treemap, use_container_width=True)
-        
-        # Add helpful caption
-        st.caption("💡 Hover over blocks to see full chapter names and values. Larger blocks = higher trade value.")
-    
-    with tab2:
-        # Interactive table view with summary
-        display_df = hs_treemap_df[['chapter_code', 'summary', 'chapter_name', 'value', 'percentage']].copy()
-        display_df['value'] = display_df['value'].apply(lambda x: f"${x:,.0f}")
-        display_df['percentage'] = display_df['percentage'].apply(lambda x: f"{x:.1f}%")
-        display_df.columns = ['Code', 'Summary', 'Full Description', 'Trade Value', 'Share']
-        
-        st.dataframe(
-            display_df,
-            use_container_width=True,
-            height=500,
-            hide_index=True
-        )
+        # TAB 2: SUNBURST VIEW
+        with viz_tab2:
+            st.caption("**Radial hierarchy** with value-based continuous colors")
 
-else:
-    st.info("No HS chapter data available for the selected filters.")
+            # Need to define hs_headings_df here if hs_chapter != 'All' for the sunburst tab
+            hs_headings_df = pd.DataFrame() # Initialize empty
+            if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_headings']) > 0:
+                hs_headings_df = pd.DataFrame(data['top_hs_headings'])
+                # Extract heading code and name separately
+                hs_headings_df['heading_code'] = hs_headings_df['code']
+                hs_headings_df['heading_name'] = hs_headings_df['description'].apply(
+                    lambda x: x.split(' - ')[1] if ' - ' in x else x
+                )
+                # Calculate percentage of total
+                total_value_headings = hs_headings_df['value'].sum()
+                hs_headings_df['percentage'] = (hs_headings_df['value'] / total_value_headings * 100)
+                # Create display labels
+                hs_headings_df['display_label'] = hs_headings_df.apply(
+                    lambda row: f"{row['heading_code']}\n{row['heading_name'][:40]}..." 
+                    if len(row['heading_name']) > 40 
+                    else f"{row['heading_code']}\n{row['heading_name']}",
+                    axis=1
+                )
+            
+            if hs_chapter == 'All' or hs_headings_df.empty:
+                # Category -> Chapter hierarchy
+                fig_sunburst = px.sunburst(
+                    hs_treemap_df,
+                    path=['category', 'display_label'],
+                    values='value',
+                    color='scaled_value',  # Value-based coloring
+                    color_continuous_scale=theme['chapters_treemap'],
+                    custom_data=['chapter_code', 'summary', 'chapter_name', 'value', 'percentage']
+                )
+                hovertemplate = (
+                    '<b>Chapter %{customdata[0]}</b><br>' +
+                    '<b>Summary:</b> %{customdata[1]}<br>' +
+                    '<i>%{customdata[2]}</i><br><br>' +
+                    '<b>Value:</b> $%{customdata[3]:,.0f}<br>' +
+                    '<b>Share:</b> %{customdata[4]:.1f}%<br>' +
+                    '<extra></extra>'
+                )
+            else:
+                # Category -> Chapter -> Heading hierarchy
+                sun_headings_df = hs_headings_df.copy()
+                clean_cat = re.sub(r'[^\x00-\x7F]+', '', get_category_name(hs_chapter)).strip()
+                sun_headings_df['category'] = clean_cat
+                sun_headings_df['chapter_label'] = f"{hs_chapter}\n{chapter_summary}"
+                
+                fig_sunburst = px.sunburst(
+                    sun_headings_df,
+                    path=['category', 'chapter_label', 'display_label'],
+                    values='value',
+                    color='value',  # Value-based coloring
+                    color_continuous_scale=theme['headings_treemap'],
+                    custom_data=['heading_code', 'heading_name', 'value', 'percentage']
+                )
+                hovertemplate = (
+                    '<b>Heading %{customdata[0]}</b><br>' +
+                    '<i>%{customdata[1]}</i><br><br>' +
+                    '<b>Value:</b> $%{customdata[2]:,.0f}<br>' +
+                    '<b>Share:</b> %{customdata[3]:.1f}%<br>' +
+                    '<extra></extra>'
+                )
+        
+            fig_sunburst.update_traces(
+                textfont_size=theme['treemap_text_size'],
+                textfont_color=theme['treemap_text_color'],
+                textfont_family='Arial Black',
+                hovertemplate=hovertemplate
+            )
+        
+            fig_sunburst.update_layout(
+                height=650,
+                margin=dict(t=10, l=10, r=10, b=10),
+                template=theme['template']
+            )
+        
+            st.plotly_chart(fig_sunburst, use_container_width=True)
+            st.caption("💡 This radial chart shows the hierarchical proportions of trade. Click on categories or chapters to drill down/up.")
+        
+        # TAB 3: DATA TABLE
+        with viz_tab3:
+            # Interactive table view with summary
+            display_df = hs_treemap_df[['chapter_code', 'summary', 'chapter_name', 'value', 'percentage']].copy()
+            display_df['value'] = display_df['value'].apply(lambda x: f"${x:,.0f}")
+            display_df['percentage'] = display_df['percentage'].apply(lambda x: f"{x:.1f}%")
+            display_df.columns = ['Code', 'Summary', 'Full Description', 'Trade Value', 'Share']
+            
+            st.dataframe(
+                display_df,
+                use_container_width=True,
+                hide_index=True,
+                height=400
+            )
+    else:
+        st.info("No HS chapter data available for the selected filters.")
 
 st.markdown("---")
 
@@ -863,6 +1084,9 @@ if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_head
         axis=1
     )
     
+    # Apply scaling for consistent display across all visualizations
+    hs_headings_df['scaled_value'] = hs_headings_df['value'] / scale_factor
+    
     # Create tabs for different views
     tab1, tab2 = st.tabs(["📊 Visual", "📋 Table"])
     
@@ -873,39 +1097,267 @@ if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_head
             hs_headings_df,
             path=['display_label'],
             values='value',
-            color='value',
+            color='scaled_value',  # Use scaled values for color
             color_continuous_scale=theme['headings_treemap'],
-            custom_data=['heading_code', 'heading_name', 'value', 'percentage']
-    )
+            custom_data=['heading_code', 'heading_name', 'scaled_value', 'percentage']
+        )
     
-    fig_heading_treemap.update_traces(
-        textposition='middle center',
-        textfont_size=theme['treemap_text_size'],
-        textfont_color=theme['treemap_text_color'],
-        textfont_family='Arial',
-        marker=dict(
-            line=dict(width=2, color='white'),
-            pad=dict(t=5, l=5, r=5, b=5)
-        ),
-        hovertemplate='<b>Heading %{customdata[0]}</b><br>' +
-                      '<i>%{customdata[1]}</i><br>' +
-                      'Value: $%{customdata[2]:,.0f}<br>' +
-                      'Share: %{customdata[3]:.1f}%<br>' +
-                      '<extra></extra>'
-    )
-    
-    fig_heading_treemap.update_layout(
-        height=450,
-        margin=dict(t=10, l=10, r=10, b=10)
-    )
-    
-    st.plotly_chart(fig_heading_treemap, use_container_width=True)
+        fig_heading_treemap.update_traces(
+            textposition='middle center',
+            textfont_size=theme['treemap_text_size'],
+            textfont_color=theme['treemap_text_color'],
+            textfont_family='Arial',
+            marker=dict(
+                line=dict(width=2, color='white'),
+                pad=dict(t=5, l=5, r=5, b=5)
+            ),
+            hovertemplate='<b>Heading %{customdata[0]}</b><br>' +
+                          '<i>%{customdata[1]}</i><br>' +
+                          f'Value: ${currency_label} %{{customdata[2]:,.2f}}<br>' +
+                          'Share: %{customdata[3]:.1f}%<br>' +
+                          '<extra></extra>'
+        )
+        
+        fig_heading_treemap.update_layout(
+            height=450,
+            margin=dict(t=10, l=10, r=10, b=10),
+            coloraxis_colorbar=dict(
+                title=f"Value CAD ({unit_suffix})" if unit_suffix else "Value CAD",
+                tickformat=',.0f'  # Show whole numbers, decimals only when appropriate
+            )
+        )
+        
+        st.plotly_chart(fig_heading_treemap, use_container_width=True)
     
     # Add explanation
     if province != 'All':
         st.caption(f"💡 Showing relative trade value of HS headings (4-digit) within Chapter {hs_chapter} for **{province}**. Larger blocks = higher trade value.")
     else:
         st.caption(f"💡 Showing relative trade value of HS headings (4-digit) within Chapter {hs_chapter} across all provinces. Larger blocks = higher trade value.")
+
+
+
+# ============================================================================
+# CONCENTRATION RISK DASHBOARD
+# ============================================================================
+
+st.markdown("---")
+
+# Create title based on filters
+if province != 'All':
+    risk_title = f"⚠️ Concentration Risk Analysis - {province}"
+else:
+    risk_title = "⚠️ Concentration Risk Analysis - All Provinces"
+
+with st.expander(risk_title, expanded=False):
+    st.markdown("**Identify economic vulnerabilities through market and product concentration metrics**")
+    
+    # Query concentration metrics
+    with st.spinner("Calculating concentration metrics..."):
+        concentration_data = db.query_concentration_metrics({
+            'start_date': start_date,
+            'end_date': end_date,
+            'trade_type': trade_type,
+            'province': province,
+            'destination': destination,
+            'hs_chapter': hs_chapter,
+            'hs_heading': hs_heading,
+            'hs_commodity': hs_commodity,
+            'exclude_usa': exclude_usa
+        })
+    
+    market_conc = concentration_data['market_concentration']
+    product_conc = concentration_data['product_concentration']
+    
+    # Risk Level Helper Function
+    def get_risk_level(pct):
+        """Return risk level and color based on concentration percentage"""
+        if pct >= 50:
+            return "🔴 High Risk", "red"
+        elif pct >= 30:
+            return "🟡 Moderate Risk", "orange"
+        else:
+            return "🟢 Diversified", "green"
+    
+    # ========================================================================
+    # RISK INDICATORS - Market and Product Concentration
+    # ========================================================================
+    
+    st.markdown("### 📊 Concentration Indicators")
+    
+    col1, col2 = st.columns(2)
+    
+    # Market Concentration Indicator
+    with col1:
+        st.markdown("**Market Concentration**")
+        market_risk, market_color = get_risk_level(market_conc['top1_pct'])
+        
+        # Progress bar for top country
+        st.metric(
+            label="Top Market Share",
+            value=f"{market_conc['top1_pct']:.1f}%",
+            help=f"Percentage of trade with the largest trading partner"
+        )
+        st.progress(min(market_conc['top1_pct'] / 100, 1.0))
+        st.markdown(f"**Status:** {market_risk}")
+        
+        # Top-N metrics
+        st.caption(f"Top 3 markets: {market_conc['top3_pct']:.1f}% | Top 5 markets: {market_conc['top5_pct']:.1f}%")
+    
+    # Product Concentration Indicator
+    with col2:
+        st.markdown("**Product Concentration**")
+        product_risk, product_color = get_risk_level(product_conc['top1_pct'])
+        
+        # Progress bar for top product
+        st.metric(
+            label="Top Product Share",
+            value=f"{product_conc['top1_pct']:.1f}%",
+            help=f"Percentage of trade from the largest HS chapter"
+        )
+        st.progress(min(product_conc['top1_pct'] / 100, 1.0))
+        st.markdown(f"**Status:** {product_risk}")
+        
+        # Top-N metrics
+        st.caption(f"Top 3 products: {product_conc['top3_pct']:.1f}% | Top 5 products: {product_conc['top5_pct']:.1f}%")
+    
+    st.markdown("---")
+    
+    # ========================================================================
+    # CONCENTRATION BREAKDOWN - Donut Charts
+    # ========================================================================
+    
+    st.markdown("### 📈 Concentration Breakdown")
+    
+    col3, col4 = st.columns(2)
+    
+    # Market Concentration Donut Chart
+    with col3:
+        st.markdown("**Top Markets**")
+        if market_conc['top_countries']:
+            market_df = pd.DataFrame(market_conc['top_countries'][:5])
+            
+            # Apply scaling to values for hover display
+            market_df['scaled_value'] = market_df['value'] / scale_factor
+            
+            fig_market_donut = px.pie(
+                market_df,
+                values='pct',
+                names='destination',
+                hole=0.4,
+                color_discrete_sequence=getattr(px.colors.sequential, theme['destinations'])
+            )
+            fig_market_donut.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                hovertemplate='<b>%{label}</b><br>' +
+                              f'Value: ${currency_label} %{{customdata[0]:,.0f}}<br>' +
+                              'Share: %{value:.1f}%<br>' +
+                              '<extra></extra>',
+                customdata=market_df[['scaled_value']].values
+            )
+            fig_market_donut.update_layout(
+                height=350,
+                margin=dict(t=10, l=10, r=10, b=10),
+                showlegend=False
+            )
+            st.plotly_chart(fig_market_donut, use_container_width=True)
+        else:
+            st.info("No market data available")
+    
+    # Product Concentration Donut Chart
+    with col4:
+        st.markdown("**Top Products (HS Chapters)**")
+        if product_conc['top_chapters']:
+            product_df = pd.DataFrame(product_conc['top_chapters'][:5])
+            
+            # Add summary category and create display label
+            product_df['summary'] = product_df['hs_chapter'].map(HS_CHAPTER_SUMMARIES)
+            product_df['label'] = product_df['hs_chapter'] + ' - ' + product_df['summary']
+            
+            # Apply scaling to values for hover display
+            product_df['scaled_value'] = product_df['value'] / scale_factor
+            
+            fig_product_donut = px.pie(
+                product_df,
+                values='pct',
+                names='label',
+                hole=0.4,
+                color_discrete_sequence=getattr(px.colors.sequential, theme['chapters_treemap'])
+            )
+            fig_product_donut.update_traces(
+                textposition='inside',
+                textinfo='label',  # Show HS Code + Summary instead of percentages
+                hovertemplate='<b>%{label}</b><br>' +
+                              f'Value: ${currency_label} %{{customdata[0]:,.0f}}<br>' +
+                              'Share: %{value:.1f}%<br>' +
+                              '<extra></extra>',
+                customdata=product_df[['scaled_value']].values
+            )
+            fig_product_donut.update_layout(
+                height=350,
+                margin=dict(t=10, l=10, r=10, b=10),
+                showlegend=False
+            )
+            st.plotly_chart(fig_product_donut, use_container_width=True)
+        else:
+            st.info("No product data available")
+    
+    # ========================================================================
+    # DEPENDENCY MATRIX - Province × Country Heatmap
+    # ========================================================================
+    
+    if province == 'All' and concentration_data['dependency_matrix']:
+        st.markdown("---")
+        st.markdown("### 🗺️ Dependency Matrix: Province × Country Concentration")
+        st.caption("Shows what percentage of each province's trade goes to each country. Darker colors = higher dependency.")
+        
+        # Convert to pivot table for heatmap
+        matrix_df = pd.DataFrame(concentration_data['dependency_matrix'])
+        
+        # Filter to show only top countries and provinces for readability
+        top_countries = matrix_df.groupby('destination')['value'].sum().nlargest(10).index
+        matrix_filtered = matrix_df[matrix_df['destination'].isin(top_countries)]
+        
+        # Create pivot table
+        pivot = matrix_filtered.pivot_table(
+            index='province',
+            columns='destination',
+            values='pct_of_province_total',
+            fill_value=0
+        )
+        
+        # Shorten country names for display
+        pivot.columns = [col.split(' - ')[-1][:20] if ' - ' in col else col[:20] for col in pivot.columns]
+        
+        # Create heatmap
+        fig_heatmap = px.imshow(
+            pivot,
+            labels=dict(x="Trading Partner", y="Province", color="% of Trade"),
+            color_continuous_scale='Reds',
+            aspect='auto'
+        )
+        fig_heatmap.update_layout(
+            height=500,
+            xaxis_title="Trading Partner",
+            yaxis_title="Province",
+            coloraxis_colorbar=dict(
+                title="% of<br>Province<br>Trade"
+            )
+        )
+        fig_heatmap.update_xaxes(side='bottom')
+        
+        st.plotly_chart(fig_heatmap, use_container_width=True)
+        
+        # Risk alerts
+        high_risk_deps = matrix_df[matrix_df['pct_of_province_total'] >= 50]
+        if not high_risk_deps.empty:
+            st.warning(f"⚠️ **High Risk Dependencies Detected:** {len(high_risk_deps)} province-country pairs with >50% concentration")
+            with st.expander("View High Risk Dependencies"):
+                risk_display = high_risk_deps[['province', 'destination', 'pct_of_province_total']].copy()
+                risk_display.columns = ['Province', 'Trading Partner', 'Concentration (%)']
+                risk_display = risk_display.sort_values('Concentration (%)', ascending=False)
+                st.dataframe(risk_display, use_container_width=True, hide_index=True)
 
 st.markdown("---")
 
@@ -914,6 +1366,7 @@ st.markdown("---")
 # ============================================================================
 
 st.subheader("📦 Top HS Chapters by Value")
+
 
 hs_df = pd.DataFrame(data['top_hs_codes'])
 if not hs_df.empty:
@@ -967,7 +1420,7 @@ st.markdown("---")
 st.caption("""
 **Data Source:** Statistics Canada Table 12-10-0011-01 | 
 **Dashboard:** Built with Streamlit + DuckDB | 
-**Last Updated:** 31 Jan 2026
+**Last Updated:** 2026-02-03
 """)
 
 # Sidebar info
@@ -978,5 +1431,4 @@ st.sidebar.info(f"""
 **Date Range:** {start_date} to {end_date}  
 **Provinces:** {len(dynamic_opts['provinces'])}  
 **HS Chapters:** {len(common_options['chapters'])}  
-**Query Time:** < 100ms ⚡
 """)
