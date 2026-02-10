@@ -633,7 +633,7 @@ if not time_series_df.empty:
         xaxis=dict(showgrid=True),
         yaxis=dict(showgrid=True, tickformat=axis_format)
     )
-    st.plotly_chart(fig_time, use_container_width=True)
+    st.plotly_chart(fig_time, width='stretch')
 else:
     st.info("No time series data available for the selected filters.")
 
@@ -677,7 +677,7 @@ with chart_col1:
             xaxis=dict(showgrid=True, tickformat=axis_format),
             yaxis=dict(showgrid=False)
         )
-        st.plotly_chart(fig_dest, use_container_width=True)
+        st.plotly_chart(fig_dest, width='stretch')
     else:
         st.info("No destination data available.")
 
@@ -704,7 +704,7 @@ with chart_col2:
             xaxis=dict(showgrid=True, tickformat=axis_format),
             yaxis=dict(showgrid=False)
         )
-        st.plotly_chart(fig_prov, use_container_width=True)
+        st.plotly_chart(fig_prov, width='stretch')
     else:
         st.info("No province data available.")
 
@@ -772,7 +772,7 @@ elif province != 'All' and destination != 'All':
             xaxis=dict(showgrid=False),
             yaxis=dict(showgrid=True, tickformat=axis_format)
         )
-        st.plotly_chart(fig_monthly, use_container_width=True)
+        st.plotly_chart(fig_monthly, width='stretch')
     else:
         st.info("No monthly data available for this filter combination.")
     
@@ -829,7 +829,7 @@ if breakdown_data and len(breakdown_data) > 0:
         xaxis=dict(showgrid=True, tickformat=axis_format),
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig_breakdown, use_container_width=True)
+    st.plotly_chart(fig_breakdown, width='stretch')
 elif breakdown_data is not None:
     st.info("No data available for the selected filters.")
 
@@ -946,7 +946,7 @@ with expander_hierarchy:
                 legend=dict(title="Industry Category", orientation="h", y=-0.2)
             )
             
-            st.plotly_chart(fig_treemap, use_container_width=True)
+            st.plotly_chart(fig_treemap, width='stretch')
             st.caption("💡 Hover over blocks to see full chapter names and values. Larger blocks = higher trade value.")
         
         # TAB 2: SUNBURST VIEW
@@ -1027,7 +1027,7 @@ with expander_hierarchy:
                 template=theme['template']
             )
         
-            st.plotly_chart(fig_sunburst, use_container_width=True)
+            st.plotly_chart(fig_sunburst, width='stretch')
             st.caption("💡 This radial chart shows the hierarchical proportions of trade. Click on categories or chapters to drill down/up.")
         
         # TAB 3: DATA TABLE
@@ -1040,7 +1040,7 @@ with expander_hierarchy:
             
             st.dataframe(
                 display_df,
-                use_container_width=True,
+                width='stretch',
                 hide_index=True,
                 height=400
             )
@@ -1127,7 +1127,7 @@ if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_head
             )
         )
         
-        st.plotly_chart(fig_heading_treemap, use_container_width=True)
+        st.plotly_chart(fig_heading_treemap, width='stretch')
     
     # Add explanation
     if province != 'All':
@@ -1261,7 +1261,7 @@ with st.expander(risk_title, expanded=False):
                 margin=dict(t=10, l=10, r=10, b=10),
                 showlegend=False
             )
-            st.plotly_chart(fig_market_donut, use_container_width=True)
+            st.plotly_chart(fig_market_donut, width='stretch')
         else:
             st.info("No market data available")
     
@@ -1299,7 +1299,7 @@ with st.expander(risk_title, expanded=False):
                 margin=dict(t=10, l=10, r=10, b=10),
                 showlegend=False
             )
-            st.plotly_chart(fig_product_donut, use_container_width=True)
+            st.plotly_chart(fig_product_donut, width='stretch')
         else:
             st.info("No product data available")
     
@@ -1347,7 +1347,7 @@ with st.expander(risk_title, expanded=False):
         )
         fig_heatmap.update_xaxes(side='bottom')
         
-        st.plotly_chart(fig_heatmap, use_container_width=True)
+        st.plotly_chart(fig_heatmap, width='stretch')
         
         # Risk alerts
         high_risk_deps = matrix_df[matrix_df['pct_of_province_total'] >= 50]
@@ -1357,7 +1357,7 @@ with st.expander(risk_title, expanded=False):
                 risk_display = high_risk_deps[['province', 'destination', 'pct_of_province_total']].copy()
                 risk_display.columns = ['Province', 'Trading Partner', 'Concentration (%)']
                 risk_display = risk_display.sort_values('Concentration (%)', ascending=False)
-                st.dataframe(risk_display, use_container_width=True, hide_index=True)
+                st.dataframe(risk_display, width='stretch', hide_index=True)
 
 st.markdown("---")
 
@@ -1394,7 +1394,7 @@ if not hs_df.empty:
         xaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format),
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig_hs, use_container_width=True)
+    st.plotly_chart(fig_hs, width='stretch')
 else:
     st.info("No HS code data available.")
 
@@ -1408,7 +1408,7 @@ with st.expander("📊 View Top HS Codes Data Table"):
         display_df = hs_df[['code', 'description', 'value']].copy()
         display_df['value'] = display_df['value'].apply(lambda x: f"${x:,.2f}")
         display_df.columns = ['HS Code', 'Description', 'Trade Value (CAD)']
-        st.dataframe(display_df, use_container_width=True, hide_index=True)
+        st.dataframe(display_df, width='stretch', hide_index=True)
     else:
         st.info("No data to display.")
 
