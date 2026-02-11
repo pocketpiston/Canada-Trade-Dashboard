@@ -38,7 +38,7 @@ st.markdown("""
         font-size: 2.2rem;
         font-weight: 700;
         letter-spacing: -0.02em;
-        color: #1a1a2e;
+        color: var(--main-title-color, #1a1a2e);
         padding-bottom: 0.3rem;
     }
     
@@ -55,7 +55,7 @@ st.markdown("""
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #666;
+        color: var(--metric-label-color, #666);
     }
     
     /* Section headers – publication style */
@@ -94,14 +94,14 @@ st.markdown("""
     /* Expanders */
     [data-testid="stExpander"] {
         margin-bottom: 0.5rem;
-        border: 1px solid #e8e8e8;
+        border: 1px solid var(--border-color, #e8e8e8);
         border-radius: 6px;
     }
     
     /* Tab styling – modern underline */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0px;
-        border-bottom: 2px solid #e8e8e8;
+        border-bottom: 2px solid var(--border-color, #e8e8e8);
     }
     
     .stTabs [data-baseweb="tab"] {
@@ -481,20 +481,20 @@ with st.sidebar.expander("📊 Display Options", expanded=True):
         'Dark': {
             # Sequential scales
             'sequential': _DARK_SEQUENTIAL,
-            'sequential_alt': ['#1a1a2e', '#2C4A4E', '#3D7A6E', '#2EC4B6', '#7EDDD4'],
-            'breakdown': ['#1a1a2e', '#5E3D2E', '#A66845', '#D4A574', '#F4D9B0'],
+            'sequential_alt': ['#232335', '#2C4A4E', '#3D7A6E', '#2EC4B6', '#7EDDD4'],
+            'breakdown': ['#232335', '#5E3D2E', '#A66845', '#D4A574', '#F4D9B0'],
             'treemap_scale': ['#2A2A4A', '#4A3F8A', '#7B5EA7', '#D4A574', '#F4D9B0'],
-            'headings_scale': ['#1A2E2E', '#2A5050', '#2EC4B6', '#7EDDD4', '#C0F0EA'],
-            'heatmap': ['#1a1a2e', '#3D2D5E', '#7B5EA7', '#E07A5F', '#FFB4A2'],
+            'headings_scale': ['#232335', '#2A5050', '#2EC4B6', '#7EDDD4', '#C0F0EA'],
+            'heatmap': ['#232335', '#3D2D5E', '#7B5EA7', '#E07A5F', '#FFB4A2'],
             # Categorical colors
             'categorical': _DARK_CATEGORICAL,
             # Chart styling
             'line_color': '#D4A574',
             'line_color_alt': '#2EC4B6',
-            'plot_bg': '#16213E',
-            'paper_bg': '#1a1a2e',
-            'grid_color': '#2A2A5A',
-            'font_color': '#C8C8D8',
+            'plot_bg': '#2d2d3f',
+            'paper_bg': '#232335',
+            'grid_color': '#4a4a6a',
+            'font_color': '#f0f0f5',
             'font_family': 'Inter, -apple-system, sans-serif',
             'treemap_text_color': '#F0E6D8',
             'treemap_text_size': 13,
@@ -512,6 +512,17 @@ with st.sidebar.expander("📊 Display Options", expanded=True):
     
     theme = THEMES[selected_theme]
 
+    # Dynamic CSS variables for theme integration
+    st.markdown(f"""
+    <style>
+        :root {{
+            --main-title-color: {theme['font_color'] if selected_theme == 'Dark' else '#1a1a2e'};
+            --border-color: {theme['grid_color'] if selected_theme == 'Dark' else '#e8e8e8'};
+            --metric-label-color: {theme['font_color'] if selected_theme == 'Dark' else '#666'};
+        }}
+    </style>
+    """, unsafe_allow_html=True)
+
 # Helper to determine scale factor and labels
 scale_factor = 1.0
 unit_suffix = ""
@@ -524,23 +535,23 @@ if unit_mode == "Auto (SI)":
 elif unit_mode == "Trillions ($T)":
     scale_factor = 1e12
     unit_suffix = "T"
-    axis_format = ",.2f"  # 2 decimal places for trillions
+    axis_format = ",.2~f"  # Smart trimming for trillions
 elif unit_mode == "Billions ($B)":
     scale_factor = 1e9
     unit_suffix = "B"
-    axis_format = ",.0f"
+    axis_format = ",.2~f"
 elif unit_mode == "Millions ($M)":
     scale_factor = 1e6
     unit_suffix = "M"
-    axis_format = ",.0f"
+    axis_format = ",.2~f"
 elif unit_mode == "Thousands ($k)":
     scale_factor = 1e3
     unit_suffix = "k"
-    axis_format = ",.0f"
+    axis_format = ",.2~f"
 elif unit_mode == "Raw ($)":
     scale_factor = 1.0
     unit_suffix = ""
-    axis_format = ",.2f"
+    axis_format = ",.2~f"
 
 # Axis Label suffix
 currency_label = f"CAD ({unit_suffix})" if unit_suffix else "CAD"
@@ -620,23 +631,23 @@ with st.spinner("Loading data..."):
         if total_val >= 1e12:
             scale_factor = 1e12
             unit_suffix = "T"
-            axis_format = ",.2f"  # 2 decimals for trillions
+            axis_format = ",.2~f"  # Max 2 decimals, trim trailing zeros
         elif total_val >= 1e9:
             scale_factor = 1e9
             unit_suffix = "B"
-            axis_format = ",.1f"  # 1 decimal for billions
+            axis_format = ",.2~f"  # Max 2 decimals, trim trailing zeros
         elif total_val >= 1e6:
             scale_factor = 1e6
             unit_suffix = "M"
-            axis_format = ",.0f"
+            axis_format = ",.2~f"
         elif total_val >= 1e3:
             scale_factor = 1e3
             unit_suffix = "k"
-            axis_format = ",.0f"
+            axis_format = ",.2~f"
         else:
             scale_factor = 1.0
             unit_suffix = ""
-            axis_format = ",.0f"
+            axis_format = ",.2~f"
             
         # Update label
         currency_label = f"CAD ({unit_suffix})" if unit_suffix else "CAD"
@@ -646,13 +657,16 @@ st.sidebar.caption(f"⚡ Last query: {query_time:.3f}s")
 
 # Helper function to auto-format KPI values
 def format_kpi_value(value):
-    """Format large values with appropriate suffix for readability"""
+    """Format large values with appropriate suffix for readability, trimming trailing zeros"""
     if value >= 1e12:
-        return f"${value/1e12:,.2f}T CAD"
+        val = value/1e12
+        return f"${val:,.2f}".rstrip('0').rstrip('.') + "T CAD"
     elif value >= 1e9:
-        return f"${value/1e9:,.2f}B CAD"
+        val = value/1e9
+        return f"${val:,.2f}".rstrip('0').rstrip('.') + "B CAD"
     elif value >= 1e6:
-        return f"${value/1e6:,.1f}M CAD"
+        val = value/1e6
+        return f"${val:,.1f}".rstrip('0').rstrip('.') + "M CAD"
     else:
         return f"${value:,.0f} CAD"
 
@@ -1063,8 +1077,8 @@ with deep_tab1:
                 ),
                 hovertemplate='<b>Chapter %{customdata[0]}: %{customdata[1]}</b><br>' +
                               '<i>%{customdata[2]}</i><br>' +
-                              'Value: $%{customdata[3]:,.0f}<br>' +
-                              'Share: %{customdata[4]:.1f}%<br>' +
+                              f'Value: ${currency_label} %{{customdata[3]:,.2~f}}<br>' +
+                              'Share: %{customdata[4]:.1~f}%<br>' +
                               '<extra></extra>'
             )
             
@@ -1247,8 +1261,8 @@ with deep_tab1:
                 ),
                 hovertemplate='<b>Heading %{customdata[0]}</b><br>' +
                               '<i>%{customdata[1]}</i><br>' +
-                              f'Value: ${currency_label} %{{customdata[2]:,.2f}}<br>' +
-                              'Share: %{customdata[3]:.1f}%<br>' +
+                              f'Value: ${currency_label} %{{customdata[2]:,.2~f}}<br>' +
+                              'Share: %{customdata[3]:.1~f}%<br>' +
                               '<extra></extra>'
             )
             
@@ -1385,8 +1399,8 @@ with deep_tab2:
                 textposition='inside',
                 textinfo='percent+label',
                 hovertemplate='<b>%{label}</b><br>' +
-                              f'Value: ${currency_label} %{{customdata[0]:,.0f}}<br>' +
-                              'Share: %{value:.1f}%<br>' +
+                              f'Value: ${currency_label} %{{customdata[0]:,.2~f}}<br>' +
+                              'Share: %{value:.1~f}%<br>' +
                               '<extra></extra>',
                 customdata=market_df[['scaled_value']].values,
                 textfont_color=theme['paper_bg']
@@ -1427,8 +1441,8 @@ with deep_tab2:
                 textposition='inside',
                 textinfo='label',  # Show HS Code + Summary instead of percentages
                 hovertemplate='<b>%{label}</b><br>' +
-                              f'Value: ${currency_label} %{{customdata[0]:,.0f}}<br>' +
-                              'Share: %{value:.1f}%<br>' +
+                              f'Value: ${currency_label} %{{customdata[0]:,.2~f}}<br>' +
+                              'Share: %{value:.1~f}%<br>' +
                               '<extra></extra>',
                 customdata=product_df[['scaled_value']].values,
                 textfont_color=theme['paper_bg']
