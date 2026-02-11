@@ -9,6 +9,7 @@ import duckdb
 import pandas as pd
 import requests
 import os
+import streamlit as st
 from pathlib import Path
 from typing import Dict, List, Any
 
@@ -20,6 +21,9 @@ class TradeDatabase:
     Uses DuckDB to query Parquet files directly without loading into memory.
     All queries are optimized for dashboard use cases.
     """
+    
+    # GitHub Release URL for data download
+    DATA_RELEASE_URL = "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/latest/download/trade_records.parquet"
     
     def __init__(self, data_dir: str = None):
         """
@@ -35,98 +39,69 @@ class TradeDatabase:
         else:
             self.data_dir = Path(data_dir)
             
+        # Ensure directory exists
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        
         self.trade_parquet_pattern = str(self.data_dir / "trade_records*.parquet")
+        self.trade_parquet_file = self.data_dir / "trade_records.parquet"
         self.hs_lookup_parquet = self.data_dir / "hs_lookup.parquet"
+        
+        # Auto-download data if missing
+        if not self.trade_parquet_file.exists():
+            self._download_trade_data()
         
         # Create in-memory DuckDB connection
         self.conn = duckdb.connect(':memory:')
         
-        # Provision data if missing
-        self._provision_data()
-        
         # Initialize views
         self._initialize_views()
     
-    def _provision_data(self):
-        """
-        Check if data exists locally, and if not, attempt to download from GitHub Releases.
-        Provides visual feedback via Streamlit status if running in a Streamlit context.
-        """
-        # Ensure directory exists
-        self.data_dir.mkdir(parents=True, exist_ok=True)
+    def _download_trade_data(self):
+        """Download trade data from GitHub Releases if not present."""
+        st.info("📥 Downloading trade data (350 MB)... This will take a few minutes on first run.")
         
-        # Target files (Using the 'latest' release alias for robustness)
-        files_to_check = [
-            ("trade_records.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/latest/download/trade_records.parquet"),
-            ("hs_lookup.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/latest/download/hs_lookup.parquet")
-        ]
-        
-        missing_files = [f for f, u in files_to_check if not (self.data_dir / f).exists()]
-        
-        if not missing_files:
-            return
-
-        # Check if running in Streamlit context
         try:
-            import streamlit as st
-            from streamlit.runtime.scriptrunner import get_script_run_ctx
-            has_streamlit = get_script_run_ctx() is not None
-        except (ImportError, AttributeError):
-            has_streamlit = False
-
-        # Use st.status for better UI visibility during large downloads
-        if has_streamlit:
-            try:
-                with st.status("📥 Initializing data provisioning...", expanded=True) as status:
-                    for filename, url in files_to_check:
-                        dest_path = self.data_dir / filename
-                        if not dest_path.exists():
-                            status.update(label=f"📥 Downloading {filename}...", state="running")
-                            try:
-                                # 120 second timeout for large files
-                                response = requests.get(url, stream=True, timeout=120)
-                                response.raise_for_status()
-                                
-                                total_size = int(response.headers.get('content-length', 0))
-                                progress_bar = st.progress(0, text=f"Downloading {filename}...")
-                                
-                                downloaded = 0
-                                with open(dest_path, 'wb') as f:
-                                    for chunk in response.iter_content(chunk_size=8192):
-                                        if chunk:
-                                            f.write(chunk)
-                                            downloaded += len(chunk)
-                                            if total_size > 0:
-                                                progress = min(downloaded / total_size, 1.0)
-                                                progress_bar.progress(progress, text=f"Downloading {filename}: {progress*100:.1f}%")
-                                
-                                progress_bar.empty()
-                                st.success(f"✅ {filename} downloaded.")
-                            except Exception as e:
-                                st.error(f"❌ Failed to download {filename}: {e}")
-                                if dest_path.exists():
-                                    dest_path.unlink() # Cleanup partial file
-                    
-                    status.update(label="✅ Data provisioning complete!", state="complete", expanded=False)
-            except Exception as e:
-                # If streamlit UI fails, fall back to print
-                has_streamlit = False
-        
-        # Fallback for non-streamlit context (tests) or if st.status fails
-        if not has_streamlit:
-            for filename, url in files_to_check:
-                dest_path = self.data_dir / filename
-                if not dest_path.exists():
-                    try:
-                        print(f"📥 Provisioning {filename} from GitHub...")
-                        response = requests.get(url, stream=True, timeout=120)
-                        response.raise_for_status()
-                        with open(dest_path, 'wb') as f:
-                            for chunk in response.iter_content(chunk_size=8192):
-                                f.write(chunk)
-                        print(f"✅ {filename} downloaded successfully.")
-                    except Exception as e2:
-                        print(f"❌ Failed to download {filename}: {e2}")
+            # Stream download with progress bar
+            response = requests.get(self.DATA_RELEASE_URL, stream=True, timeout=300)
+            response.raise_for_status()
+            
+            total_size = int(response.headers.get('content-length', 0))
+            
+            if total_size > 0:
+                progress_bar = st.progress(0, text="Downloading trade data...")
+                downloaded = 0
+                
+                with open(self.trade_parquet_file, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            progress = min(downloaded / total_size, 1.0)
+                            progress_bar.progress(progress, text=f"Downloading: {downloaded / 1024 / 1024:.1f} MB / {total_size / 1024 / 1024:.1f} MB")
+                
+                progress_bar.empty()
+                st.success("✅ Data downloaded successfully! Refresh the page to load the dashboard.")
+                st.stop()
+            else:
+                # Fallback without progress
+                with open(self.trade_parquet_file, 'wb') as f:
+                    f.write(response.content)
+                st.success("✅ Data downloaded successfully! Refresh the page to load the dashboard.")
+                st.stop()
+                
+        except requests.exceptions.RequestException as e:
+            st.error(f"❌ Failed to download data: {e}")
+            st.info(f"""
+            **Alternative options:**
+            1. Download manually from: {self.DATA_RELEASE_URL}
+               Place in: `data/processed/trade_records.parquet`
+            """)
+            st.stop()
+        except Exception as e:
+            st.error(f"❌ Unexpected error: {e}")
+            st.stop()
+    
+    
     
     def _initialize_views(self):
         """Create DuckDB views from Parquet files."""
