@@ -50,6 +50,7 @@ class TradeDatabase:
     def _provision_data(self):
         """
         Check if data exists locally, and if not, attempt to download from GitHub Releases.
+        Provides visual feedback via Streamlit status if running in a Streamlit context.
         """
         # Ensure directory exists
         self.data_dir.mkdir(parents=True, exist_ok=True)
@@ -60,20 +61,72 @@ class TradeDatabase:
             ("hs_lookup.parquet", "https://github.com/pocketpiston/Canada-Trade-Dashboard/releases/latest/download/hs_lookup.parquet")
         ]
         
-        for filename, url in files_to_check:
-            dest_path = self.data_dir / filename
-            if not dest_path.exists():
-                try:
-                    print(f"📥 Provisioning {filename} from GitHub...")
-                    response = requests.get(url, stream=True)
-                    response.raise_for_status()
+        missing_files = [f for f, u in files_to_check if not (self.data_dir / f).exists()]
+        
+        if not missing_files:
+            return
+
+        # Check if running in Streamlit context
+        try:
+            import streamlit as st
+            from streamlit.runtime.scriptrunner import get_script_run_ctx
+            has_streamlit = get_script_run_ctx() is not None
+        except (ImportError, AttributeError):
+            has_streamlit = False
+
+        # Use st.status for better UI visibility during large downloads
+        if has_streamlit:
+            try:
+                with st.status("📥 Initializing data provisioning...", expanded=True) as status:
+                    for filename, url in files_to_check:
+                        dest_path = self.data_dir / filename
+                        if not dest_path.exists():
+                            status.update(label=f"📥 Downloading {filename}...", state="running")
+                            try:
+                                # 120 second timeout for large files
+                                response = requests.get(url, stream=True, timeout=120)
+                                response.raise_for_status()
+                                
+                                total_size = int(response.headers.get('content-length', 0))
+                                progress_bar = st.progress(0, text=f"Downloading {filename}...")
+                                
+                                downloaded = 0
+                                with open(dest_path, 'wb') as f:
+                                    for chunk in response.iter_content(chunk_size=8192):
+                                        if chunk:
+                                            f.write(chunk)
+                                            downloaded += len(chunk)
+                                            if total_size > 0:
+                                                progress = min(downloaded / total_size, 1.0)
+                                                progress_bar.progress(progress, text=f"Downloading {filename}: {progress*100:.1f}%")
+                                
+                                progress_bar.empty()
+                                st.success(f"✅ {filename} downloaded.")
+                            except Exception as e:
+                                st.error(f"❌ Failed to download {filename}: {e}")
+                                if dest_path.exists():
+                                    dest_path.unlink() # Cleanup partial file
                     
-                    with open(dest_path, 'wb') as f:
-                        for chunk in response.iter_content(chunk_size=8192):
-                            f.write(chunk)
-                    print(f"✅ {filename} downloaded successfully.")
-                except Exception as e:
-                    print(f"❌ Failed to download {filename}: {e}")
+                    status.update(label="✅ Data provisioning complete!", state="complete", expanded=False)
+            except Exception as e:
+                # If streamlit UI fails, fall back to print
+                has_streamlit = False
+        
+        # Fallback for non-streamlit context (tests) or if st.status fails
+        if not has_streamlit:
+            for filename, url in files_to_check:
+                dest_path = self.data_dir / filename
+                if not dest_path.exists():
+                    try:
+                        print(f"📥 Provisioning {filename} from GitHub...")
+                        response = requests.get(url, stream=True, timeout=120)
+                        response.raise_for_status()
+                        with open(dest_path, 'wb') as f:
+                            for chunk in response.iter_content(chunk_size=8192):
+                                f.write(chunk)
+                        print(f"✅ {filename} downloaded successfully.")
+                    except Exception as e2:
+                        print(f"❌ Failed to download {filename}: {e2}")
     
     def _initialize_views(self):
         """Create DuckDB views from Parquet files."""
