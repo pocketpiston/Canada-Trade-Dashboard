@@ -46,15 +46,16 @@ class TradeDatabase:
         self.trade_parquet_file = self.data_dir / "trade_records.parquet"
         self.hs_lookup_parquet = self.data_dir / "hs_lookup.parquet"
         
-        # Auto-download data if missing
-        if not self.trade_parquet_file.exists():
-            self._download_trade_data()
-        
         # Create in-memory DuckDB connection
         self.conn = duckdb.connect(':memory:')
         
         # Initialize views
         self._initialize_views()
+    
+    def has_data(self):
+        """Check if trade data files exist."""
+        return self.trade_parquet_file.exists()
+
     
     def _download_trade_data(self):
         """Download trade data from GitHub Releases if not present."""

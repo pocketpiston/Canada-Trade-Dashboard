@@ -130,11 +130,24 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize database (cached for performance)
+# ============================================================================
+# DATA PROVISIONING - Check data BEFORE initializing database
+# This runs in the Streamlit render cycle so the app boots first
+# (passing Streamlit Cloud's timeout check), then handles download.
+# ============================================================================
 @st.cache_resource
 def init_database():
     """Initialize and cache database connection."""
     return TradeDatabase()
+
+db = init_database()
+
+if not db.has_data():
+    st.title("🇨🇦 Canadian Trade Dashboard")
+    st.info("📥 First-time setup: downloading trade data...")
+    db._download_trade_data()
+    # _download_trade_data calls st.stop() after downloading
+    # On refresh, has_data() will be True and we skip this block
 
 # Load options (Common)
 @st.cache_data(ttl=3600)
@@ -143,6 +156,7 @@ def load_common_options():
     return db.get_common_options()
 
 # Load dynamic options (Dependent on Trade Type)
+
 @st.cache_data(ttl=600)
 def load_dynamic_options(trade_type):
     db = init_database()
