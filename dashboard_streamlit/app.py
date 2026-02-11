@@ -449,7 +449,7 @@ with st.sidebar.expander("📊 Display Options", expanded=True):
             'line_color_alt': '#990F3D',
             'plot_bg': '#FFF8F2',
             'paper_bg': '#FFF8F2',
-            'grid_color': '#E8DDD4',
+            'grid_color': '#D0BFA0',
             'font_color': '#33302E',
             'font_family': 'Inter, Georgia, serif',
             'treemap_text_color': '#2D2319',
