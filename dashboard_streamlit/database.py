@@ -59,8 +59,6 @@ class TradeDatabase:
     
     def _download_trade_data(self):
         """Download trade data from GitHub Releases if not present."""
-        st.info("📥 Downloading trade data (350 MB)... This will take a few minutes on first run.")
-        
         try:
             # Stream download with progress bar
             response = requests.get(self.DATA_RELEASE_URL, stream=True, timeout=300)
@@ -81,14 +79,12 @@ class TradeDatabase:
                             progress_bar.progress(progress, text=f"Downloading: {downloaded / 1024 / 1024:.1f} MB / {total_size / 1024 / 1024:.1f} MB")
                 
                 progress_bar.empty()
-                st.success("✅ Data downloaded successfully! Refresh the page to load the dashboard.")
-                st.stop()
+                st.success("✅ Data downloaded successfully!")
             else:
                 # Fallback without progress
                 with open(self.trade_parquet_file, 'wb') as f:
                     f.write(response.content)
-                st.success("✅ Data downloaded successfully! Refresh the page to load the dashboard.")
-                st.stop()
+                st.success("✅ Data downloaded successfully!")
                 
         except requests.exceptions.RequestException as e:
             st.error(f"❌ Failed to download data: {e}")

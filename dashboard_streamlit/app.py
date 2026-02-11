@@ -146,8 +146,11 @@ if not db.has_data():
     st.title("🇨🇦 Canadian Trade Dashboard")
     st.info("📥 First-time setup: downloading trade data...")
     db._download_trade_data()
-    # _download_trade_data calls st.stop() after downloading
-    # On refresh, has_data() will be True and we skip this block
+    # After download, clear ALL caches so database reinitializes with real data
+    st.cache_resource.clear()
+    st.cache_data.clear()
+    st.rerun()
+
 
 # Load options (Common)
 @st.cache_data(ttl=3600)
