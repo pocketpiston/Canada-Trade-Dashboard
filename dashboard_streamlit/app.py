@@ -22,38 +22,68 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Custom CSS – Modern publication-quality styling
 st.markdown("""
 <style>
+    /* Import Inter from Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global font */
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    /* Dashboard title */
     .main-title {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #FF0000;
-        padding-bottom: 0.5rem;
+        font-size: 2.2rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: #1a1a2e;
+        padding-bottom: 0.3rem;
     }
     
-    /* Enhanced KPI Cards */
+    /* KPI Cards – refined typography */
     [data-testid="stMetricValue"] {
-        font-size: 36px;
+        font-size: 34px;
         font-weight: 700;
+        font-family: 'Inter', sans-serif;
+        letter-spacing: -0.01em;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 16px;
+        font-size: 13px;
         font-weight: 600;
-        color: #31333F;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #666;
     }
     
-    /* Compact spacing */
+    /* Section headers – publication style */
+    h2 {
+        font-weight: 700 !important;
+        letter-spacing: -0.01em !important;
+        margin-top: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    h3 {
+        font-weight: 600 !important;
+        letter-spacing: -0.005em !important;
+        margin-top: 0.6rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+    
+    /* Layout spacing */
     .block-container {
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
     }
     
-    /* Reduce caption text size for less clutter */
+    /* Captions – subtle, informational */
     [data-testid="stCaptionContainer"] {
         font-size: 12px;
-        color: #6c757d;
+        color: #888;
+        letter-spacing: 0.01em;
     }
     
     /* Compact section spacing */
@@ -61,22 +91,27 @@ st.markdown("""
         margin-bottom: 0.3rem;
     }
     
-    /* Compact expander spacing */
+    /* Expanders */
     [data-testid="stExpander"] {
         margin-bottom: 0.5rem;
+        border: 1px solid #e8e8e8;
+        border-radius: 6px;
     }
     
-    /* Tab styling */
+    /* Tab styling – modern underline */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 4px;
+        gap: 0px;
+        border-bottom: 2px solid #e8e8e8;
     }
     
     .stTabs [data-baseweb="tab"] {
-        padding: 6px 12px;
+        padding: 10px 20px;
         font-weight: 500;
+        font-size: 14px;
+        letter-spacing: 0.01em;
     }
     
-    /* Reduce sidebar padding */
+    /* Sidebar */
     [data-testid="stSidebar"] {
         padding-top: 1rem;
         padding-left: 1rem;
@@ -88,41 +123,36 @@ st.markdown("""
         padding-bottom: 0.5rem;
     }
     
-    /* Reduce sidebar expander spacing */
     [data-testid="stSidebar"] [data-testid="stExpander"] {
         margin-bottom: 0.1rem;
         margin-top: 0.1rem;
     }
     
-    /* Reduce subheader margins */
-    h2, h3 {
-        margin-top: 0.3rem !important;
-        margin-bottom: 0.3rem !important;
-    }
-    
-    /* Reduce dataframe padding */
+    /* Dataframe */
     [data-testid="stDataFrame"] {
         padding-top: 0.2rem;
         padding-bottom: 0.2rem;
     }
     
-    /* Reduce horizontal rule margins */
+    /* Separators – subtle */
     hr {
-        margin-top: 0.3rem !important;
-        margin-bottom: 0.3rem !important;
+        margin-top: 0.8rem !important;
+        margin-bottom: 0.8rem !important;
+        border: none !important;
+        border-top: 1px solid #e0e0e0 !important;
     }
     
-    /* Reduce info/caption spacing */
+    /* Paragraph spacing */
     [data-testid="stMarkdownContainer"] p {
         margin-bottom: 0.3rem;
     }
     
-    /* Compact metric spacing */
+    /* Metrics */
     [data-testid="stMetric"] {
-        padding: 0.2rem 0;
+        padding: 0.3rem 0;
     }
     
-    /* Remove extra padding inside expanders */
+    /* Expander inner padding */
     [data-testid="stExpander"] > div > div {
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
@@ -386,64 +416,97 @@ with st.sidebar.expander("📊 Display Options", expanded=True):
         key="unit_mode_select"
     )
     
-    # Visualization Theme Selector
-    # Theme configurations
+    # =========================================================================
+    # VISUALIZATION THEMES – Inspired by FT / The Economist
+    # =========================================================================
+    
+    # Custom color sequences for publication-quality charts
+    _FT_SEQUENTIAL = ['#fff1e5', '#f2c4a0', '#e69a6e', '#cc6d3d', '#990f3d', '#660a29']
+    _FT_CATEGORICAL = ['#0D7680', '#0F5499', '#990F3D', '#CC0000', '#593380', '#B45B2C',
+                        '#1D7D74', '#5C4614', '#AD5E9A', '#2E6B8A']
+    
+    _ECON_SEQUENTIAL = ['#f0f4f7', '#bdd7e7', '#6baed6', '#006BA2', '#004570', '#002940']
+    _ECON_CATEGORICAL = ['#006BA2', '#DB444B', '#3EBCD2', '#379A8B', '#EBB434',
+                          '#B4BA39', '#9A607F', '#D1B07C', '#758D99', '#5C4A3D']
+    
+    _DARK_SEQUENTIAL = ['#1a1a2e', '#2d2d5e', '#4a3f8a', '#7b5ea7', '#D4A574', '#F4D9B0']
+    _DARK_CATEGORICAL = ['#D4A574', '#2EC4B6', '#E07A5F', '#81B29A', '#F2CC8F',
+                          '#6C9BCF', '#C98BBD', '#8ECAE6', '#A8DADC', '#FFB4A2']
+    
     THEMES = {
-        'Classic': {
-            'destinations': 'Blues',
-            'provinces': 'Greens', 
-            'breakdown': 'Oranges',
-            'chapters_treemap': 'Blues',
-            'headings_treemap': 'Greens',
-            'chapters_bar': 'Oranges',
-            'treemap_text_color': '#1a1a1a',  # High contrast dark grey
-            'treemap_text_size': 14,
+        'Ivory': {
+            # Sequential scales (for continuous/heatmap data)
+            'sequential': _FT_SEQUENTIAL,
+            'sequential_alt': ['#fff1e5', '#fad5b5', '#e8a77e', '#cc6d3d', '#0D7680', '#074D52'],
+            'breakdown': ['#fff1e5', '#f2c4a0', '#cc6d3d', '#990F3D', '#660929'],
+            'treemap_scale': ['#E8D5C4', '#CC9966', '#B07040', '#8B4513', '#660A29'],
+            'headings_scale': ['#D4E8E5', '#80B8B0', '#4D9990', '#0D7680', '#074D52'],
+            'heatmap': ['#FFF1E5', '#F2C4A0', '#CC6D3D', '#990F3D', '#660929'],
+            # Categorical colors (for discrete/pie data)
+            'categorical': _FT_CATEGORICAL,
+            # Chart styling
+            'line_color': '#0D7680',
+            'line_color_alt': '#990F3D',
+            'plot_bg': '#FFF8F2',
+            'paper_bg': '#FFF8F2',
+            'grid_color': '#E8DDD4',
+            'font_color': '#33302E',
+            'font_family': 'Inter, Georgia, serif',
+            'treemap_text_color': '#2D2319',
+            'treemap_text_size': 13,
             'template': 'plotly_white',
-            'line_color': '#1f77b4'
         },
-        'High Contrast': {
-            'destinations': 'Electric',
-            'provinces': 'Hot',
-            'breakdown': 'Blackbody',
-            'chapters_treemap': 'Electric',
-            'headings_treemap': 'Hot',
-            'chapters_bar': 'Blackbody',
-            'treemap_text_color': '#1a1a1a',  # High contrast dark grey
-            'treemap_text_size': 15,
+        'Blue': {
+            # Sequential scales
+            'sequential': _ECON_SEQUENTIAL,
+            'sequential_alt': ['#f0f4f7', '#a8d8a8', '#379A8B', '#225E54', '#143B35'],
+            'breakdown': ['#fef2e4', '#f8d5a3', '#EBB434', '#C4891E', '#8B5A0B'],
+            'treemap_scale': ['#D4E4F0', '#8BB8D6', '#4A90B8', '#006BA2', '#004570'],
+            'headings_scale': ['#D4EDEB', '#7BC8C0', '#3EBCD2', '#1A8A9E', '#0D5E6A'],
+            'heatmap': ['#F0F4F7', '#BDD7E7', '#6BAED6', '#DB444B', '#8B1A1A'],
+            # Categorical colors
+            'categorical': _ECON_CATEGORICAL,
+            # Chart styling
+            'line_color': '#006BA2',
+            'line_color_alt': '#DB444B',
+            'plot_bg': '#FFFFFF',
+            'paper_bg': '#FFFFFF',
+            'grid_color': '#E6E6E6',
+            'font_color': '#333333',
+            'font_family': 'Inter, -apple-system, sans-serif',
+            'treemap_text_color': '#1a1a1a',
+            'treemap_text_size': 13,
             'template': 'plotly_white',
-            'line_color': '#FF0000'
         },
-        'Dark Mode': {
-            'destinations': [[0, '#00008b'], [0.5, '#4b0082'], [1, '#ff00ff']],
-            'provinces': [[0, '#006400'], [0.5, '#adff2f'], [1, '#ffff00']],
-            'breakdown': [[0, '#2f4f4f'], [0.5, '#20b2aa'], [1, '#00ffff']],
-            'chapters_treemap': 'Magma',
-            'headings_treemap': 'Inferno',
-            'chapters_bar': 'Plotly3',
-            'treemap_text_color': 'white',
-            'treemap_text_size': 14,
+        'Dark': {
+            # Sequential scales
+            'sequential': _DARK_SEQUENTIAL,
+            'sequential_alt': ['#1a1a2e', '#2C4A4E', '#3D7A6E', '#2EC4B6', '#7EDDD4'],
+            'breakdown': ['#1a1a2e', '#5E3D2E', '#A66845', '#D4A574', '#F4D9B0'],
+            'treemap_scale': ['#2A2A4A', '#4A3F8A', '#7B5EA7', '#D4A574', '#F4D9B0'],
+            'headings_scale': ['#1A2E2E', '#2A5050', '#2EC4B6', '#7EDDD4', '#C0F0EA'],
+            'heatmap': ['#1a1a2e', '#3D2D5E', '#7B5EA7', '#E07A5F', '#FFB4A2'],
+            # Categorical colors
+            'categorical': _DARK_CATEGORICAL,
+            # Chart styling
+            'line_color': '#D4A574',
+            'line_color_alt': '#2EC4B6',
+            'plot_bg': '#16213E',
+            'paper_bg': '#1a1a2e',
+            'grid_color': '#2A2A5A',
+            'font_color': '#C8C8D8',
+            'font_family': 'Inter, -apple-system, sans-serif',
+            'treemap_text_color': '#F0E6D8',
+            'treemap_text_size': 13,
             'template': 'plotly_dark',
-            'line_color': '#00BFFF'
-        },
-        'Colorblind Friendly': {
-            'destinations': 'Viridis',
-            'provinces': 'Plasma',
-            'breakdown': 'Cividis',
-            'chapters_treemap': 'Viridis',
-            'headings_treemap': 'Plasma',
-            'chapters_bar': 'Cividis',
-            'treemap_text_color': '#1a1a1a',  # High contrast dark grey
-            'treemap_text_size': 14,
-            'template': 'plotly_white',
-            'line_color': '#332288'
         }
     }
     
     selected_theme = st.selectbox(
         "Visualization Theme",
         list(THEMES.keys()),
-        index=1,  # Default to High Contrast for better visibility
-        help="Choose a color theme for all visualizations. High Contrast and Colorblind Friendly options improve accessibility.",
+        index=1,  # Default to Blue
+        help="Choose a professional color theme for all visualizations.",
         key="theme_select"
     )
     
@@ -642,13 +705,16 @@ if not time_series_df.empty:
         title=f"{trade_type} Value by Month",
         labels={'value': f'Trade Value ({currency_label})', 'month': 'Month'}
     )
-    fig_time.update_traces(line_color=theme['line_color'], line_width=3)
+    fig_time.update_traces(line_color=theme['line_color'], line_width=2.5)
     fig_time.update_layout(
         height=400,
         hovermode='x unified',
         template=theme['template'],
-        xaxis=dict(showgrid=True),
-        yaxis=dict(showgrid=True, tickformat=axis_format)
+        plot_bgcolor=theme['plot_bg'],
+        paper_bgcolor=theme['paper_bg'],
+        font=dict(family=theme['font_family'], color=theme['font_color']),
+        xaxis=dict(showgrid=True, gridcolor=theme['grid_color'], zeroline=False),
+        yaxis=dict(showgrid=True, gridcolor=theme['grid_color'], tickformat=axis_format, zeroline=False)
     )
     st.plotly_chart(fig_time, width='stretch')
 else:
@@ -685,13 +751,16 @@ with chart_col1:
             orientation='h',
             labels={'value': f'Trade Value ({currency_label})', 'short_name': single_partner_label},
             color='value',
-            color_continuous_scale=theme['destinations']
+            color_continuous_scale=theme['sequential']
         )
         fig_dest.update_layout(
             height=400,
             showlegend=False,
             template=theme['template'],
-            xaxis=dict(showgrid=True, tickformat=axis_format),
+            plot_bgcolor=theme['plot_bg'],
+            paper_bgcolor=theme['paper_bg'],
+            font=dict(family=theme['font_family'], color=theme['font_color']),
+            xaxis=dict(showgrid=True, gridcolor=theme['grid_color'], tickformat=axis_format),
             yaxis=dict(showgrid=False)
         )
         st.plotly_chart(fig_dest, width='stretch')
@@ -712,13 +781,16 @@ with chart_col2:
             orientation='h',
             labels={'value': f'Trade Value ({currency_label})', 'province': 'Province'},
             color='value',
-            color_continuous_scale=theme['provinces']
+            color_continuous_scale=theme['sequential_alt']
         )
         fig_prov.update_layout(
             height=400,
             showlegend=False,
             template=theme['template'],
-            xaxis=dict(showgrid=True, tickformat=axis_format),
+            plot_bgcolor=theme['plot_bg'],
+            paper_bgcolor=theme['paper_bg'],
+            font=dict(family=theme['font_family'], color=theme['font_color']),
+            xaxis=dict(showgrid=True, gridcolor=theme['grid_color'], tickformat=axis_format),
             yaxis=dict(showgrid=False)
         )
         st.plotly_chart(fig_prov, width='stretch')
@@ -728,165 +800,205 @@ with chart_col2:
 st.markdown("---")
 
 # ============================================================================
-# DYNAMIC BREAKDOWN CHART (Adapts to Filters)
+# TOP HS CHAPTERS (OVERVIEW - moved up for broad context)
 # ============================================================================
 
-st.subheader("📊 Dynamic Breakdown Analysis")
+st.subheader("📦 Top HS Chapters by Value")
 
-# Determine what to show based on active filters
-if province != 'All' and destination == 'All':
-    # Province selected: Show top destinations/origins for this province
-    action = "Import Origins" if trade_type == 'Import' else "Export Destinations"
-    direction = "to" if trade_type == 'Import' else "from" # Semantics: Imports to Prov, Exports from Prov
-    # Wait: Imports come TO the province (from Origin). Exports go FROM province (to Dest).
-    # Title: "Top Import Origins for {province}" / "Top Export Destinations from {province}"
-    
-    title_text = f"**Top {action} for {province}**"
-    st.markdown(title_text)
-    
-    breakdown_data = data['top_destinations']
-    x_label = 'Origin' if trade_type == 'Import' else 'Destination'
-    chart_color = 'Oranges'
-    
-elif destination != 'All' and province == 'All':
-    # Destination/Origin selected: Show top provinces trading
-    dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
-    
-    if trade_type == 'Import':
-        # "Top Provinces Importing from {Origin}"
-        st.markdown(f"**Top Provinces Importing from {dest_short}**")
-    else:
-        st.markdown(f"**Top Provinces Exporting to {dest_short}**")
-        
-    breakdown_data = data['top_provinces']
-    x_label = 'Province'
-    chart_color = 'Purples'
-    
-elif province != 'All' and destination != 'All':
-    # Both selected: Show monthly trend
-    dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
-    arrow = "←" if trade_type == 'Import' else "→"
-    st.markdown(f"**Monthly Trend: {province} {arrow} {dest_short}**")
-    
-    # Create monthly breakdown
-    time_series_df = pd.DataFrame(data['time_series'])
-    if not time_series_df.empty:
-        time_series_df['month'] = pd.to_datetime(time_series_df['month'])
-        time_series_df['month_label'] = time_series_df['month'].dt.strftime('%b %Y')
-        
-        fig_monthly = px.bar(
-            time_series_df,
-            x='month_label',
-            y='value',
-            labels={'value': f'Trade Value ({currency_label})', 'month_label': 'Month'},
-            color='value',
-            color_continuous_scale=theme['breakdown']
-        )
-        fig_monthly.update_layout(
-            height=400,
-            showlegend=False,
-            template=theme['template'],
-            xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=True, tickformat=axis_format)
-        )
-        st.plotly_chart(fig_monthly, width='stretch')
-    else:
-        st.info("No monthly data available for this filter combination.")
-    
-    breakdown_data = None  # Skip the standard bar chart below
-    
-elif hs_chapter != 'All' and destination == 'All' and province == 'All':
-    # HS Chapter selected: Show top destinations/origins for this chapter
-    partner_label = "Origins" if trade_type == 'Import' else "Destinations"
-    chapter_summary = get_chapter_summary(hs_chapter)
-    st.markdown(f"**Top {partner_label} for HS Chapter {hs_chapter} - {chapter_summary}**")
-    breakdown_data = data['top_destinations']
-    x_label = 'Origin' if trade_type == 'Import' else 'Destination'
-    
-else:
-    # No specific filters or HS-only: Show top destinations overall
-    partner_label = "Import Origins" if trade_type == 'Import' else "Export Destinations"
-    st.markdown(f"**Top {partner_label} (Overall)**")
-    breakdown_data = data['top_destinations']
-    x_label = 'Origin' if trade_type == 'Import' else 'Destination'
-
-# Show bar chart if we have breakdown data
-if breakdown_data and len(breakdown_data) > 0:
-    breakdown_df = pd.DataFrame(breakdown_data)
-    
-    # Scale values according to selected units
-    breakdown_df['value'] = breakdown_df['value'] / scale_factor
-    
-    # Shorten labels if needed
-    if 'destination' in breakdown_df.columns:
-        breakdown_df['label'] = breakdown_df['destination'].apply(
-            lambda x: x.split(' - ')[-1][:25] if ' - ' in x else x[:25]
-        )
-        y_col = 'label'
-    elif 'province' in breakdown_df.columns:
-        breakdown_df['label'] = breakdown_df['province']
-        y_col = 'label'
-    else:
-        breakdown_df['label'] = breakdown_df.iloc[:, 0]  # First column
-        y_col = 'label'
-    
-    fig_breakdown = px.bar(
-        breakdown_df,
-        x='value',
-        y=y_col,
-        orientation='h',
-        labels={'value': f'Trade Value ({currency_label})', y_col: x_label},
-        color='value',
-        color_continuous_scale=theme['breakdown']
+hs_df = pd.DataFrame(data['top_hs_codes'])
+if not hs_df.empty:
+    # Create label with code and summary
+    hs_df['chapter_code'] = hs_df['code']
+    hs_df['summary'] = hs_df['chapter_code'].map(HS_CHAPTER_SUMMARIES)
+    hs_df['label'] = hs_df.apply(
+        lambda row: f"{row['chapter_code']} - {row['summary']}", axis=1
     )
-    fig_breakdown.update_layout(
-        height=450,
+    
+    hs_df['value'] = hs_df['value'] / scale_factor
+    fig_hs = px.bar(
+        hs_df,
+        x='value',
+        y='label',
+        orientation='h',
+        labels={'value': f'Trade Value ({currency_label})', 'label': 'HS Chapter'},
+        color='value',
+        color_continuous_scale=theme['sequential']
+    )
+    fig_hs.update_layout(
+        height=500,
         showlegend=False,
         template=theme['template'],
-        xaxis=dict(showgrid=True, tickformat=axis_format),
+        plot_bgcolor=theme['plot_bg'],
+        paper_bgcolor=theme['paper_bg'],
+        font=dict(family=theme['font_family'], color=theme['font_color']),
+        xaxis=dict(showgrid=True, gridcolor=theme['grid_color'], tickformat=axis_format),
         yaxis=dict(showgrid=False)
     )
-    st.plotly_chart(fig_breakdown, width='stretch')
-elif breakdown_data is not None:
-    st.info("No data available for the selected filters.")
+    st.plotly_chart(fig_hs, width='stretch')
+else:
+    st.info("No HS code data available.")
+
+with st.expander("📊 View Top HS Codes Data Table"):
+    if not hs_df.empty:
+        # Format values for display
+        display_df = hs_df[['code', 'description', 'value']].copy()
+        display_df['value'] = display_df['value'].apply(lambda x: f"${x:,.2f}")
+        display_df.columns = ['HS Code', 'Description', 'Trade Value (CAD)']
+        st.dataframe(display_df, width='stretch', hide_index=True)
+    else:
+        st.info("No data to display.")
 
 st.markdown("---")
 
 # ============================================================================
-# HS CHAPTERS TREEMAP
-# ============================================================================
-# NAVIGATION & DRILL-DOWN HELPERS
+# TIER 2: DEEP DIVE (Tabbed Interface)
 # ============================================================================
 
-def get_clean_category(code):
-    """Helper to get category name without emojis"""
-    name = get_category_name(code)
-    return re.sub(r'[^\x00-\x7F]+', '', name).strip()
+st.subheader("🔍 Detailed Analysis")
 
-if hs_chapter != 'All':
-    col1, col2 = st.columns([4, 1])
-    with col1:
-        st.info(f"📍 **Drilled down to:** Category: {get_clean_category(hs_chapter)} > Chapter {hs_chapter}")
-    with col2:
-        if st.button("⬅️ Back to All", help="Clear HS Chapter filter"):
-            # This is a bit tricky with Streamlit filters, usually we'd use session state
-            # for now, we'll just instruct the user or if possible clear it.
-            # A simpler way is to just remind them, but the plan said a button.
-            # To actually clear the filter from here, we'd need to have used session_state for the selectbox.
-            st.warning("Please select 'All' in the sidebar filter to go back.")
+deep_tab1, deep_tab2 = st.tabs(["📦 Product Analysis", "⚠️ Concentration Risk"])
 
-# Create title based on province filter
-if province != 'All':
-    hierarchy_title = f"Product Hierarchy Analysis - {province}"
-else:
-    hierarchy_title = "Product Hierarchy Analysis - All Provinces"
+# ==========================================================================
+# TAB 1: PRODUCT ANALYSIS (Dynamic Breakdown + Product Hierarchy + HS Headings)
+# ==========================================================================
+with deep_tab1:
 
-# ============================================================================
-# PRODUCT HIERARCHY ANALYSIS (Phase 2: Consolidated Treemap + Sunburst)
-# ============================================================================
-expander_hierarchy = st.expander(f"📦 {hierarchy_title}", expanded=True)
+    # --- Dynamic Breakdown Analysis ---
+    st.markdown("### 📊 Dynamic Breakdown Analysis")
+    
+    # Determine what to show based on active filters
+    if province != 'All' and destination == 'All':
+        action = "Import Origins" if trade_type == 'Import' else "Export Destinations"
+        title_text = f"**Top {action} for {province}**"
+        st.markdown(title_text)
+        breakdown_data = data['top_destinations']
+        x_label = 'Origin' if trade_type == 'Import' else 'Destination'
+        chart_color = 'Oranges'
+        
+    elif destination != 'All' and province == 'All':
+        dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
+        if trade_type == 'Import':
+            st.markdown(f"**Top Provinces Importing from {dest_short}**")
+        else:
+            st.markdown(f"**Top Provinces Exporting to {dest_short}**")
+        breakdown_data = data['top_provinces']
+        x_label = 'Province'
+        chart_color = 'Purples'
+        
+    elif province != 'All' and destination != 'All':
+        dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
+        arrow = "←" if trade_type == 'Import' else "→"
+        st.markdown(f"**Monthly Trend: {province} {arrow} {dest_short}**")
+        
+        time_series_df2 = pd.DataFrame(data['time_series'])
+        if not time_series_df2.empty:
+            time_series_df2['month'] = pd.to_datetime(time_series_df2['month'])
+            time_series_df2['month_label'] = time_series_df2['month'].dt.strftime('%b %Y')
+            
+            fig_monthly = px.bar(
+                time_series_df2,
+                x='month_label',
+                y='value',
+                labels={'value': f'Trade Value ({currency_label})', 'month_label': 'Month'},
+                color='value',
+                color_continuous_scale=theme['breakdown']
+            )
+            fig_monthly.update_layout(
+                height=400,
+                showlegend=False,
+                template=theme['template'],
+                plot_bgcolor=theme['plot_bg'],
+                paper_bgcolor=theme['paper_bg'],
+                font=dict(family=theme['font_family'], color=theme['font_color']),
+                xaxis=dict(showgrid=False),
+                yaxis=dict(showgrid=True, gridcolor=theme['grid_color'], tickformat=axis_format)
+            )
+            st.plotly_chart(fig_monthly, width='stretch')
+        else:
+            st.info("No monthly data available for this filter combination.")
+        
+        breakdown_data = None
+        
+    elif hs_chapter != 'All' and destination == 'All' and province == 'All':
+        partner_label = "Origins" if trade_type == 'Import' else "Destinations"
+        chapter_summary = get_chapter_summary(hs_chapter)
+        st.markdown(f"**Top {partner_label} for HS Chapter {hs_chapter} - {chapter_summary}**")
+        breakdown_data = data['top_destinations']
+        x_label = 'Origin' if trade_type == 'Import' else 'Destination'
+        
+    else:
+        partner_label = "Import Origins" if trade_type == 'Import' else "Export Destinations"
+        st.markdown(f"**Top {partner_label} (Overall)**")
+        breakdown_data = data['top_destinations']
+        x_label = 'Origin' if trade_type == 'Import' else 'Destination'
+    
+    # Show bar chart if we have breakdown data
+    if breakdown_data and len(breakdown_data) > 0:
+        breakdown_df = pd.DataFrame(breakdown_data)
+        breakdown_df['value'] = breakdown_df['value'] / scale_factor
+        
+        if 'destination' in breakdown_df.columns:
+            breakdown_df['label'] = breakdown_df['destination'].apply(
+                lambda x: x.split(' - ')[-1][:25] if ' - ' in x else x[:25]
+            )
+            y_col = 'label'
+        elif 'province' in breakdown_df.columns:
+            breakdown_df['label'] = breakdown_df['province']
+            y_col = 'label'
+        else:
+            breakdown_df['label'] = breakdown_df.iloc[:, 0]
+            y_col = 'label'
+        
+        fig_breakdown = px.bar(
+            breakdown_df,
+            x='value',
+            y=y_col,
+            orientation='h',
+            labels={'value': f'Trade Value ({currency_label})', y_col: x_label},
+            color='value',
+            color_continuous_scale=theme['breakdown']
+        )
+        fig_breakdown.update_layout(
+            height=450,
+            showlegend=False,
+            template=theme['template'],
+            plot_bgcolor=theme['plot_bg'],
+            paper_bgcolor=theme['paper_bg'],
+            font=dict(family=theme['font_family'], color=theme['font_color']),
+            xaxis=dict(showgrid=True, gridcolor=theme['grid_color'], tickformat=axis_format),
+            yaxis=dict(showgrid=False)
+        )
+        st.plotly_chart(fig_breakdown, width='stretch')
+    elif breakdown_data is not None:
+        st.info("No data available for the selected filters.")
+    
+    st.markdown("---")
+    
+    # --- Product Hierarchy Analysis ---
+    # NAVIGATION & DRILL-DOWN HELPERS
+    
+    def get_clean_category(code):
+        """Helper to get category name without emojis"""
+        name = get_category_name(code)
+        return re.sub(r'[^\x00-\x7F]+', '', name).strip()
+    
+    if hs_chapter != 'All':
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.info(f"📍 **Drilled down to:** Category: {get_clean_category(hs_chapter)} > Chapter {hs_chapter}")
+        with col2:
+            if st.button("⬅️ Back to All", help="Clear HS Chapter filter"):
+                st.warning("Please select 'All' in the sidebar filter to go back.")
+    
+    # Create title based on province filter
+    if province != 'All':
+        hierarchy_title = f"Product Hierarchy Analysis - {province}"
+    else:
+        hierarchy_title = "Product Hierarchy Analysis - All Provinces"
 
-with expander_hierarchy:
+    st.markdown(f"### 📦 {hierarchy_title}")
+
+
     # Prepare treemap data
     hs_treemap_df = pd.DataFrame(data['top_hs_codes'])
     
@@ -944,9 +1056,9 @@ with expander_hierarchy:
                 textposition='middle center',
                 textfont_size=theme['treemap_text_size'],
                 textfont_color=theme['treemap_text_color'],
-                textfont_family='Arial Black',
+                textfont_family=theme['font_family'],
                 marker=dict(
-                    line=dict(width=2, color='white'),
+                    line=dict(width=1, color=theme['paper_bg']),
                     pad=dict(t=5, l=5, r=5, b=5)
                 ),
                 hovertemplate='<b>Chapter %{customdata[0]}: %{customdata[1]}</b><br>' +
@@ -960,7 +1072,10 @@ with expander_hierarchy:
                 height=600,
                 margin=dict(t=10, l=10, r=10, b=10),
                 showlegend=True,
-                legend=dict(title="Industry Category", orientation="h", y=-0.2)
+                legend=dict(title="Industry Category", orientation="h", y=-0.2),
+                template=theme['template'],
+                paper_bgcolor=theme['paper_bg'],
+                font=dict(family=theme['font_family'], color=theme['font_color'])
             )
             
             st.plotly_chart(fig_treemap, width='stretch')
@@ -997,7 +1112,7 @@ with expander_hierarchy:
                     path=['category', 'display_label'],
                     values='value',
                     color='scaled_value',  # Value-based coloring
-                    color_continuous_scale=theme['chapters_treemap'],
+                    color_continuous_scale=theme['treemap_scale'],
                     custom_data=['chapter_code', 'summary', 'chapter_name', 'value', 'percentage']
                 )
                 hovertemplate = (
@@ -1020,7 +1135,7 @@ with expander_hierarchy:
                     path=['category', 'chapter_label', 'display_label'],
                     values='value',
                     color='value',  # Value-based coloring
-                    color_continuous_scale=theme['headings_treemap'],
+                    color_continuous_scale=theme['headings_scale'],
                     custom_data=['heading_code', 'heading_name', 'value', 'percentage']
                 )
                 hovertemplate = (
@@ -1034,14 +1149,16 @@ with expander_hierarchy:
             fig_sunburst.update_traces(
                 textfont_size=theme['treemap_text_size'],
                 textfont_color=theme['treemap_text_color'],
-                textfont_family='Arial Black',
+                textfont_family=theme['font_family'],
                 hovertemplate=hovertemplate
             )
         
             fig_sunburst.update_layout(
                 height=650,
                 margin=dict(t=10, l=10, r=10, b=10),
-                template=theme['template']
+                template=theme['template'],
+                paper_bgcolor=theme['paper_bg'],
+                font=dict(family=theme['font_family'], color=theme['font_color'])
             )
         
             st.plotly_chart(fig_sunburst, width='stretch')
@@ -1064,109 +1181,109 @@ with expander_hierarchy:
     else:
         st.info("No HS chapter data available for the selected filters.")
 
-st.markdown("---")
+    st.markdown("---")
 
-# ============================================================================
-# HS HEADINGS TREEMAP (appears when Chapter is selected)
-# ============================================================================
+    # ======================================================================
+    # HS HEADINGS TREEMAP (appears when Chapter is selected)
+    # ======================================================================
 
-if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_headings']) > 0:
-    # Create title based on province and chapter
-    chapter_summary = get_chapter_summary(hs_chapter)
-    if province != 'All':
-        heading_title = f"📊 HS Headings Breakdown - Chapter {hs_chapter}: {chapter_summary} - {province}"
-    else:
-        heading_title = f"📊 HS Headings Breakdown - Chapter {hs_chapter}: {chapter_summary}"
-    
-    st.subheader(heading_title)
-    
-    # Prepare treemap data
-    hs_headings_df = pd.DataFrame(data['top_hs_headings'])
-    
-    # Extract heading code and name separately
-    hs_headings_df['heading_code'] = hs_headings_df['code']
-    hs_headings_df['heading_name'] = hs_headings_df['description'].apply(
-        lambda x: x.split(' - ')[1] if ' - ' in x else x
-    )
-    
-    # Calculate percentage of total
-    total_value = hs_headings_df['value'].sum()
-    hs_headings_df['percentage'] = (hs_headings_df['value'] / total_value * 100)
-    
-    # Create display labels with code + shortened description for readability
-    hs_headings_df['display_label'] = hs_headings_df.apply(
-        lambda row: f"{row['heading_code']}\n{row['heading_name'][:40]}..." 
-        if len(row['heading_name']) > 40 
-        else f"{row['heading_code']}\n{row['heading_name']}",
-        axis=1
-    )
-    
-    # Apply scaling for consistent display across all visualizations
-    hs_headings_df['scaled_value'] = hs_headings_df['value'] / scale_factor
-    
-    # Create tabs for different views
-    tab1, tab2 = st.tabs(["📊 Visual", "📋 Table"])
-    
-    with tab1:
-        # Create treemap with code-only labels
-
-        fig_heading_treemap = px.treemap(
-            hs_headings_df,
-            path=['display_label'],
-            values='value',
-            color='scaled_value',  # Use scaled values for color
-            color_continuous_scale=theme['headings_treemap'],
-            custom_data=['heading_code', 'heading_name', 'scaled_value', 'percentage']
-        )
-    
-        fig_heading_treemap.update_traces(
-            textposition='middle center',
-            textfont_size=theme['treemap_text_size'],
-            textfont_color=theme['treemap_text_color'],
-            textfont_family='Arial',
-            marker=dict(
-                line=dict(width=2, color='white'),
-                pad=dict(t=5, l=5, r=5, b=5)
-            ),
-            hovertemplate='<b>Heading %{customdata[0]}</b><br>' +
-                          '<i>%{customdata[1]}</i><br>' +
-                          f'Value: ${currency_label} %{{customdata[2]:,.2f}}<br>' +
-                          'Share: %{customdata[3]:.1f}%<br>' +
-                          '<extra></extra>'
+    if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_headings']) > 0:
+        # Create title based on province and chapter
+        chapter_summary = get_chapter_summary(hs_chapter)
+        if province != 'All':
+            heading_title = f"📊 HS Headings Breakdown - Chapter {hs_chapter}: {chapter_summary} - {province}"
+        else:
+            heading_title = f"📊 HS Headings Breakdown - Chapter {hs_chapter}: {chapter_summary}"
+        
+        st.markdown(f"### {heading_title}")
+        
+        # Prepare treemap data
+        hs_headings_df = pd.DataFrame(data['top_hs_headings'])
+        
+        # Extract heading code and name separately
+        hs_headings_df['heading_code'] = hs_headings_df['code']
+        hs_headings_df['heading_name'] = hs_headings_df['description'].apply(
+            lambda x: x.split(' - ')[1] if ' - ' in x else x
         )
         
-        fig_heading_treemap.update_layout(
-            height=450,
-            margin=dict(t=10, l=10, r=10, b=10),
-            coloraxis_colorbar=dict(
-                title=f"Value CAD ({unit_suffix})" if unit_suffix else "Value CAD",
-                tickformat=',.0f'  # Show whole numbers, decimals only when appropriate
+        # Calculate percentage of total
+        total_value = hs_headings_df['value'].sum()
+        hs_headings_df['percentage'] = (hs_headings_df['value'] / total_value * 100)
+        
+        # Create display labels with code + shortened description for readability
+        hs_headings_df['display_label'] = hs_headings_df.apply(
+            lambda row: f"{row['heading_code']}\n{row['heading_name'][:40]}..." 
+            if len(row['heading_name']) > 40 
+            else f"{row['heading_code']}\n{row['heading_name']}",
+            axis=1
+        )
+        
+        # Apply scaling for consistent display across all visualizations
+        hs_headings_df['scaled_value'] = hs_headings_df['value'] / scale_factor
+        
+        # Create tabs for different views
+        heading_tab1, heading_tab2 = st.tabs(["📊 Visual", "📋 Table"])
+        
+        with heading_tab1:
+            # Create treemap with code-only labels
+
+            fig_heading_treemap = px.treemap(
+                hs_headings_df,
+                path=['display_label'],
+                values='value',
+                color='scaled_value',  # Use scaled values for color
+                color_continuous_scale=theme['headings_scale'],
+                custom_data=['heading_code', 'heading_name', 'scaled_value', 'percentage']
             )
-        )
         
-        st.plotly_chart(fig_heading_treemap, width='stretch')
-    
-    # Add explanation
+            fig_heading_treemap.update_traces(
+                textposition='middle center',
+                textfont_size=theme['treemap_text_size'],
+                textfont_color=theme['treemap_text_color'],
+                textfont_family=theme['font_family'],
+                marker=dict(
+                    line=dict(width=1, color=theme['paper_bg']),
+                    pad=dict(t=5, l=5, r=5, b=5)
+                ),
+                hovertemplate='<b>Heading %{customdata[0]}</b><br>' +
+                              '<i>%{customdata[1]}</i><br>' +
+                              f'Value: ${currency_label} %{{customdata[2]:,.2f}}<br>' +
+                              'Share: %{customdata[3]:.1f}%<br>' +
+                              '<extra></extra>'
+            )
+            
+            fig_heading_treemap.update_layout(
+                height=450,
+                margin=dict(t=10, l=10, r=10, b=10),
+                template=theme['template'],
+                paper_bgcolor=theme['paper_bg'],
+                font=dict(family=theme['font_family'], color=theme['font_color']),
+                coloraxis_colorbar=dict(
+                    title=f"Value CAD ({unit_suffix})" if unit_suffix else "Value CAD",
+                    tickformat=',.0f'  # Show whole numbers, decimals only when appropriate
+                )
+            )
+            
+            st.plotly_chart(fig_heading_treemap, width='stretch')
+        
+        # Add explanation
+        if province != 'All':
+            st.caption(f"💡 Showing relative trade value of HS headings (4-digit) within Chapter {hs_chapter} for **{province}**. Larger blocks = higher trade value.")
+        else:
+            st.caption(f"💡 Showing relative trade value of HS headings (4-digit) within Chapter {hs_chapter} across all provinces. Larger blocks = higher trade value.")
+
+# ==========================================================================
+# TAB 2: CONCENTRATION RISK
+# ==========================================================================
+with deep_tab2:
+
+    # Create title based on filters
     if province != 'All':
-        st.caption(f"💡 Showing relative trade value of HS headings (4-digit) within Chapter {hs_chapter} for **{province}**. Larger blocks = higher trade value.")
+        risk_title = f"Concentration Risk Analysis - {province}"
     else:
-        st.caption(f"💡 Showing relative trade value of HS headings (4-digit) within Chapter {hs_chapter} across all provinces. Larger blocks = higher trade value.")
+        risk_title = "Concentration Risk Analysis - All Provinces"
 
-
-
-# ============================================================================
-# CONCENTRATION RISK DASHBOARD
-# ============================================================================
-
-st.markdown("---")
-
-# Create title based on filters
-if province != 'All':
-    risk_title = f"⚠️ Concentration Risk Analysis - {province}"
-else:
-    risk_title = "⚠️ Concentration Risk Analysis - All Provinces"
-
-with st.expander(risk_title, expanded=False):
+    st.markdown(f"### ⚠️ {risk_title}")
     st.markdown("**Identify economic vulnerabilities through market and product concentration metrics**")
     
     # Query concentration metrics
@@ -1196,11 +1313,11 @@ with st.expander(risk_title, expanded=False):
         else:
             return "🟢 Diversified", "green"
     
-    # ========================================================================
+    # ======================================================================
     # RISK INDICATORS - Market and Product Concentration
-    # ========================================================================
+    # ======================================================================
     
-    st.markdown("### 📊 Concentration Indicators")
+    st.markdown("#### 📊 Concentration Indicators")
     
     col1, col2 = st.columns(2)
     
@@ -1240,11 +1357,11 @@ with st.expander(risk_title, expanded=False):
     
     st.markdown("---")
     
-    # ========================================================================
+    # ======================================================================
     # CONCENTRATION BREAKDOWN - Donut Charts
-    # ========================================================================
+    # ======================================================================
     
-    st.markdown("### 📈 Concentration Breakdown")
+    st.markdown("#### 📈 Concentration Breakdown")
     
     col3, col4 = st.columns(2)
     
@@ -1262,7 +1379,7 @@ with st.expander(risk_title, expanded=False):
                 values='pct',
                 names='destination',
                 hole=0.4,
-                color_discrete_sequence=getattr(px.colors.sequential, theme['destinations'])
+                color_discrete_sequence=theme['categorical']
             )
             fig_market_donut.update_traces(
                 textposition='inside',
@@ -1271,12 +1388,16 @@ with st.expander(risk_title, expanded=False):
                               f'Value: ${currency_label} %{{customdata[0]:,.0f}}<br>' +
                               'Share: %{value:.1f}%<br>' +
                               '<extra></extra>',
-                customdata=market_df[['scaled_value']].values
+                customdata=market_df[['scaled_value']].values,
+                textfont_color=theme['paper_bg']
             )
             fig_market_donut.update_layout(
                 height=350,
                 margin=dict(t=10, l=10, r=10, b=10),
-                showlegend=False
+                showlegend=False,
+                template=theme['template'],
+                paper_bgcolor=theme['paper_bg'],
+                font=dict(family=theme['font_family'], color=theme['font_color'])
             )
             st.plotly_chart(fig_market_donut, width='stretch')
         else:
@@ -1300,7 +1421,7 @@ with st.expander(risk_title, expanded=False):
                 values='pct',
                 names='label',
                 hole=0.4,
-                color_discrete_sequence=getattr(px.colors.sequential, theme['chapters_treemap'])
+                color_discrete_sequence=theme['categorical']
             )
             fig_product_donut.update_traces(
                 textposition='inside',
@@ -1309,24 +1430,28 @@ with st.expander(risk_title, expanded=False):
                               f'Value: ${currency_label} %{{customdata[0]:,.0f}}<br>' +
                               'Share: %{value:.1f}%<br>' +
                               '<extra></extra>',
-                customdata=product_df[['scaled_value']].values
+                customdata=product_df[['scaled_value']].values,
+                textfont_color=theme['paper_bg']
             )
             fig_product_donut.update_layout(
                 height=350,
                 margin=dict(t=10, l=10, r=10, b=10),
-                showlegend=False
+                showlegend=False,
+                template=theme['template'],
+                paper_bgcolor=theme['paper_bg'],
+                font=dict(family=theme['font_family'], color=theme['font_color'])
             )
             st.plotly_chart(fig_product_donut, width='stretch')
         else:
             st.info("No product data available")
     
-    # ========================================================================
+    # ======================================================================
     # DEPENDENCY MATRIX - Province × Country Heatmap
-    # ========================================================================
+    # ======================================================================
     
     if province == 'All' and concentration_data['dependency_matrix']:
         st.markdown("---")
-        st.markdown("### 🗺️ Dependency Matrix: Province × Country Concentration")
+        st.markdown("#### 🗺️ Dependency Matrix: Province × Country Concentration")
         st.caption("Shows what percentage of each province's trade goes to each country. Darker colors = higher dependency.")
         
         # Convert to pivot table for heatmap
@@ -1351,7 +1476,7 @@ with st.expander(risk_title, expanded=False):
         fig_heatmap = px.imshow(
             pivot,
             labels=dict(x="Trading Partner", y="Province", color="% of Trade"),
-            color_continuous_scale='Reds',
+            color_continuous_scale=theme['heatmap'],
             aspect='auto'
         )
         fig_heatmap.update_layout(
@@ -1360,7 +1485,11 @@ with st.expander(risk_title, expanded=False):
             yaxis_title="Province",
             coloraxis_colorbar=dict(
                 title="% of<br>Province<br>Trade"
-            )
+            ),
+            template=theme['template'],
+            plot_bgcolor=theme['plot_bg'],
+            paper_bgcolor=theme['paper_bg'],
+            font=dict(family=theme['font_family'], color=theme['font_color'])
         )
         fig_heatmap.update_xaxes(side='bottom')
         
@@ -1375,59 +1504,6 @@ with st.expander(risk_title, expanded=False):
                 risk_display.columns = ['Province', 'Trading Partner', 'Concentration (%)']
                 risk_display = risk_display.sort_values('Concentration (%)', ascending=False)
                 st.dataframe(risk_display, width='stretch', hide_index=True)
-
-st.markdown("---")
-
-# ============================================================================
-# TOP HS CODES
-# ============================================================================
-
-st.subheader("📦 Top HS Chapters by Value")
-
-
-hs_df = pd.DataFrame(data['top_hs_codes'])
-if not hs_df.empty:
-    # Create label with code and summary
-    hs_df['chapter_code'] = hs_df['code']
-    hs_df['summary'] = hs_df['chapter_code'].map(HS_CHAPTER_SUMMARIES)
-    hs_df['label'] = hs_df.apply(
-        lambda row: f"{row['chapter_code']} - {row['summary']}", axis=1
-    )
-    
-    hs_df['value'] = hs_df['value'] / scale_factor
-    fig_hs = px.bar(
-        hs_df,
-        x='value',
-        y='label',
-        orientation='h',
-        labels={'value': f'Trade Value ({currency_label})', 'label': 'HS Chapter'},
-        color='value',
-        color_continuous_scale=theme['chapters_bar']
-    )
-    fig_hs.update_layout(
-        height=500,
-        showlegend=False,
-        plot_bgcolor='white',
-        xaxis=dict(showgrid=True, gridcolor='lightgray', tickformat=axis_format),
-        yaxis=dict(showgrid=False)
-    )
-    st.plotly_chart(fig_hs, width='stretch')
-else:
-    st.info("No HS code data available.")
-
-# ============================================================================
-# DATA TABLE (EXPANDABLE)
-# ============================================================================
-
-with st.expander("📊 View Top HS Codes Data Table"):
-    if not hs_df.empty:
-        # Format values for display
-        display_df = hs_df[['code', 'description', 'value']].copy()
-        display_df['value'] = display_df['value'].apply(lambda x: f"${x:,.2f}")
-        display_df.columns = ['HS Code', 'Description', 'Trade Value (CAD)']
-        st.dataframe(display_df, width='stretch', hide_index=True)
-    else:
-        st.info("No data to display.")
 
 # ============================================================================
 # FOOTER
@@ -1449,3 +1525,4 @@ st.sidebar.info(f"""
 **Provinces:** {len(dynamic_opts['provinces'])}  
 **HS Chapters:** {len(common_options['chapters'])}  
 """)
+
