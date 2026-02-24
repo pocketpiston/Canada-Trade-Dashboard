@@ -10,7 +10,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import re
-from database import TradeDatabase
+from database import TradeDatabase, dest_display_name
 from datetime import datetime
 from hs_summaries import HS_CHAPTER_SUMMARIES, get_chapter_summary, get_category, get_category_name, CATEGORY_MAP
 
@@ -75,8 +75,8 @@ st.markdown("""
     
     /* Layout spacing */
     .block-container {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding-top: 2rem;
+        padding-bottom: 1rem;
     }
     
     /* Captions – subtle, informational */
@@ -326,11 +326,24 @@ with st.sidebar.expander("🌍 Geography", expanded=True):
     )
     
     # Destination Country Filter
-    destination = st.selectbox(
+    # dynamic_opts['countries'] is {display_name: raw_parquet_value}
+    destination_display = st.selectbox(
         dest_label,
-        ['All'] + dynamic_opts['countries'],
+        ['All'] + list(dynamic_opts['countries'].keys()),
         key="destination_select"
     )
+    # Resolve to raw parquet value for query; keep 'All' as-is
+    destination = (
+        'All' if destination_display == 'All'
+        else dynamic_opts['countries'].get(destination_display, destination_display)
+    )
+    
+    if selected_dest_display == 'All':
+        destination = 'All'
+        destination_display = 'All'
+    else:
+        destination = dynamic_opts['countries'][selected_dest_display]
+        destination_display = selected_dest_display
     
     # USA Exclusion Filter
     exclude_usa = st.checkbox(
@@ -363,9 +376,9 @@ with st.sidebar.expander("📦 HS Product Classification", expanded=True):
     # Heading (4-digit) - depends on Chapter
     if hs_chapter != 'All':
         headings = db.get_hs_headings(hs_chapter)
-        # Show full descriptions without truncation
+        # Show full descriptions without truncation (heading already cleaned in Tier 2)
         heading_options = ['All'] + [
-            f"{h['hs_heading']} - {h['heading'].split(' - ')[1] if ' - ' in h['heading'] else h['heading']}"
+            f"{h['hs_heading']} - {h['heading']}"
             for h in headings[:50]  # Limit to 50 for performance
         ]
         selected_heading_display = st.selectbox(
@@ -591,10 +604,8 @@ st.markdown('<div class="main-title">🇨🇦 Canadian Trade Dashboard</div>', u
 trading_partner_label = "Origin" if trade_type == 'Import' else "Destination"
 
 filter_parts = [f"**{trade_type}**", f"{start_date} to {end_date}", f"Province: **{province}**"]
-if destination != 'All':
-    # Shorten destination name for display
-    dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
-    filter_parts.append(f"{trading_partner_label}: **{dest_short}**")
+if destination_display != 'All':
+    filter_parts.append(f"{trading_partner_label}: **{destination_display}**")
 if exclude_usa:
     filter_parts.append("🚫 **USA Excluded**")
 if hs_chapter != 'All':
@@ -751,10 +762,7 @@ with chart_col1:
     
     dest_df = pd.DataFrame(data['top_destinations'])
     if not dest_df.empty:
-        # Shorten destination names for display
-        dest_df['short_name'] = dest_df['destination'].apply(
-            lambda x: x.split(' - ')[-1][:30] if ' - ' in x else x[:30]
-        )
+        dest_df['short_name'] = dest_df['destination'].apply(dest_display_name)
         
         dest_df['value'] = dest_df['value'] / scale_factor
         
@@ -821,9 +829,14 @@ st.subheader("📦 Top HS Chapters by Value")
 
 hs_df = pd.DataFrame(data['top_hs_codes'])
 if not hs_df.empty:
-    # Create label with code and summary
     hs_df['chapter_code'] = hs_df['code']
-    hs_df['summary'] = hs_df['chapter_code'].map(HS_CHAPTER_SUMMARIES)
+    # Use pre-computed chapter_summary from Tier 1; fall back to HS_CHAPTER_SUMMARIES
+    hs_df['summary'] = hs_df.apply(
+        lambda r: r['chapter_summary']
+        if 'chapter_summary' in r and r['chapter_summary']
+        else HS_CHAPTER_SUMMARIES.get(r['chapter_code'], r['chapter_code']),
+        axis=1
+    )
     hs_df['label'] = hs_df.apply(
         lambda row: f"{row['chapter_code']} - {row['summary']}", axis=1
     )
@@ -890,19 +903,17 @@ with deep_tab1:
         chart_color = 'Oranges'
         
     elif destination != 'All' and province == 'All':
-        dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
         if trade_type == 'Import':
-            st.markdown(f"**Top Provinces Importing from {dest_short}**")
+            st.markdown(f"**Top Provinces Importing from {destination_display}**")
         else:
-            st.markdown(f"**Top Provinces Exporting to {dest_short}**")
+            st.markdown(f"**Top Provinces Exporting to {destination_display}**")
         breakdown_data = data['top_provinces']
         x_label = 'Province'
         chart_color = 'Purples'
         
     elif province != 'All' and destination != 'All':
-        dest_short = destination.split(' - ')[-1] if ' - ' in destination else destination
         arrow = "←" if trade_type == 'Import' else "→"
-        st.markdown(f"**Monthly Trend: {province} {arrow} {dest_short}**")
+        st.markdown(f"**Monthly Trend: {province} {arrow} {destination_display}**")
         
         time_series_df2 = pd.DataFrame(data['time_series'])
         if not time_series_df2.empty:
@@ -952,9 +963,7 @@ with deep_tab1:
         breakdown_df['value'] = breakdown_df['value'] / scale_factor
         
         if 'destination' in breakdown_df.columns:
-            breakdown_df['label'] = breakdown_df['destination'].apply(
-                lambda x: x.split(' - ')[-1][:25] if ' - ' in x else x[:25]
-            )
+            breakdown_df['label'] = breakdown_df['destination'].apply(dest_display_name)
             y_col = 'label'
         elif 'province' in breakdown_df.columns:
             breakdown_df['label'] = breakdown_df['province']
@@ -1017,21 +1026,29 @@ with deep_tab1:
     hs_treemap_df = pd.DataFrame(data['top_hs_codes'])
     
     if not hs_treemap_df.empty:
-        # Extract chapter code and name separately
+        # chapter_code and chapter_name come pre-cleaned from Tier 1
         hs_treemap_df['chapter_code'] = hs_treemap_df['code']
-        hs_treemap_df['chapter_name'] = hs_treemap_df['description'].apply(
-            lambda x: x.split(' - ')[1] if ' - ' in x else x
+        hs_treemap_df['chapter_name'] = hs_treemap_df['description']  # already cleaned in Tier 1
+
+        # Use pre-computed chapter_summary from Tier 1; fall back to HS_CHAPTER_SUMMARIES
+        hs_treemap_df['summary'] = hs_treemap_df.apply(
+            lambda r: r['chapter_summary']
+            if 'chapter_summary' in r and r['chapter_summary']
+            else HS_CHAPTER_SUMMARIES.get(r['chapter_code'], r['chapter_code']),
+            axis=1
         )
-        
-        # Add summary from dictionary
-        hs_treemap_df['summary'] = hs_treemap_df['chapter_code'].map(HS_CHAPTER_SUMMARIES)
         
         # Calculate percentage of total
         total_value = hs_treemap_df['value'].sum()
         hs_treemap_df['percentage'] = (hs_treemap_df['value'] / total_value * 100)
         
-        # Map to categories (without emojis)
-        hs_treemap_df['category'] = hs_treemap_df['chapter_code'].apply(get_clean_category)
+        # Use pre-computed category from Tier 1 if available; otherwise derive it
+        if 'category' in hs_treemap_df.columns and hs_treemap_df['category'].notna().any():
+            hs_treemap_df['category'] = hs_treemap_df['category'].fillna(
+                hs_treemap_df['chapter_code'].apply(get_clean_category)
+            )
+        else:
+            hs_treemap_df['category'] = hs_treemap_df['chapter_code'].apply(get_clean_category)
         
         # Create discrete color map for categories
         clean_cat_map = {}
@@ -1103,11 +1120,9 @@ with deep_tab1:
             hs_headings_df = pd.DataFrame() # Initialize empty
             if hs_chapter != 'All' and data.get('top_hs_headings') and len(data['top_hs_headings']) > 0:
                 hs_headings_df = pd.DataFrame(data['top_hs_headings'])
-                # Extract heading code and name separately
+                # heading_name pre-cleaned in Tier 2; description = heading_name
                 hs_headings_df['heading_code'] = hs_headings_df['code']
-                hs_headings_df['heading_name'] = hs_headings_df['description'].apply(
-                    lambda x: x.split(' - ')[1] if ' - ' in x else x
-                )
+                hs_headings_df['heading_name'] = hs_headings_df['description']  # already cleaned
                 # Calculate percentage of total
                 total_value_headings = hs_headings_df['value'].sum()
                 hs_headings_df['percentage'] = (hs_headings_df['value'] / total_value_headings * 100)
@@ -1214,12 +1229,10 @@ with deep_tab1:
         # Prepare treemap data
         hs_headings_df = pd.DataFrame(data['top_hs_headings'])
         
-        # Extract heading code and name separately
+        # heading_name pre-cleaned in Tier 2; description = heading_name
         hs_headings_df['heading_code'] = hs_headings_df['code']
-        hs_headings_df['heading_name'] = hs_headings_df['description'].apply(
-            lambda x: x.split(' - ')[1] if ' - ' in x else x
-        )
-        
+        hs_headings_df['heading_name'] = hs_headings_df['description']  # already cleaned
+
         # Calculate percentage of total
         total_value = hs_headings_df['value'].sum()
         hs_headings_df['percentage'] = (hs_headings_df['value'] / total_value * 100)
@@ -1384,14 +1397,15 @@ with deep_tab2:
         st.markdown("**Top Markets**")
         if market_conc['top_countries']:
             market_df = pd.DataFrame(market_conc['top_countries'][:5])
-            
+            market_df['display_name'] = market_df['destination'].apply(dest_display_name)
+
             # Apply scaling to values for hover display
             market_df['scaled_value'] = market_df['value'] / scale_factor
-            
+
             fig_market_donut = px.pie(
                 market_df,
                 values='pct',
-                names='destination',
+                names='display_name',
                 hole=0.4,
                 color_discrete_sequence=theme['categorical']
             )
@@ -1423,8 +1437,13 @@ with deep_tab2:
         if product_conc['top_chapters']:
             product_df = pd.DataFrame(product_conc['top_chapters'][:5])
             
-            # Add summary category and create display label
-            product_df['summary'] = product_df['hs_chapter'].map(HS_CHAPTER_SUMMARIES)
+            # Use pre-computed chapter_summary from Tier 1; fall back to HS_CHAPTER_SUMMARIES
+            product_df['summary'] = product_df.apply(
+                lambda r: r['chapter_summary']
+                if 'chapter_summary' in r and r['chapter_summary']
+                else HS_CHAPTER_SUMMARIES.get(r['hs_chapter'], r['hs_chapter']),
+                axis=1
+            )
             product_df['label'] = product_df['hs_chapter'] + ' - ' + product_df['summary']
             
             # Apply scaling to values for hover display
@@ -1483,8 +1502,8 @@ with deep_tab2:
             fill_value=0
         )
         
-        # Shorten country names for display
-        pivot.columns = [col.split(' - ')[-1][:20] if ' - ' in col else col[:20] for col in pivot.columns]
+        # Clean country names for display
+        pivot.columns = [dest_display_name(col) for col in pivot.columns]
         
         # Create heatmap
         fig_heatmap = px.imshow(
@@ -1515,6 +1534,7 @@ with deep_tab2:
             st.warning(f"⚠️ **High Risk Dependencies Detected:** {len(high_risk_deps)} province-country pairs with >50% concentration")
             with st.expander("View High Risk Dependencies"):
                 risk_display = high_risk_deps[['province', 'destination', 'pct_of_province_total']].copy()
+                risk_display['destination'] = risk_display['destination'].apply(dest_display_name)
                 risk_display.columns = ['Province', 'Trading Partner', 'Concentration (%)']
                 risk_display = risk_display.sort_values('Concentration (%)', ascending=False)
                 st.dataframe(risk_display, width='stretch', hide_index=True)
